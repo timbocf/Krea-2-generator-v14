@@ -305,7 +305,7 @@ const hairstyleGroups = [
         description: "Classic updos and braided hair styling choices",
         presets: [
             "wet hair", "ponytail", "messy ponytail", "French braid", "loose braids",
-            "cornrows", "box braids", "micro braids", "dreadlocks", "messy bun",
+            "double braids", "cornrows", "box braids", "micro braids", "dreadlocks", "messy bun",
             "messy double buns", "with bangs"
         ]
     },
@@ -1725,8 +1725,10 @@ function buildRandomSubject(cfg) {
     details.push(joinParts([hairLength, hairType, style, hairText(hairColor)]));
     details.push(cfg.additionalDetails, ...cfg.accessoryValues);
     const subjectDetails = joinParts(details);
-    return { subject: joinParts([lead, subjectDetails]), subjectLead: lead, subjectDetails,
-        gender, nationality, genderForm };
+    return {
+        subject: joinParts([lead, subjectDetails]), subjectLead: lead, subjectDetails,
+        gender, nationality, genderForm
+    };
 }
 
 // A selected complete outfit is authoritative. Otherwise choose ONE
@@ -1881,17 +1883,17 @@ async function runBatch() {
     canvas.clear();
 
     for (const promptData of finalPrompts) {
-            const config = JSON.parse(JSON.stringify(baseConfig));
+        const config = JSON.parse(JSON.stringify(baseConfig));
 
-            config.model = KREA_MODEL.file;
-            config.loras = KREA_MODEL.loras.map(lora => ({ ...lora }));
-            config.width = promptData.width;
-            config.height = promptData.height;
+        config.model = KREA_MODEL.file;
+        config.loras = KREA_MODEL.loras.map(lora => ({ ...lora }));
+        config.width = promptData.width;
+        config.height = promptData.height;
 
-            canvas.clear();
+        canvas.clear();
 
-            console.log(`Generating ${promptData.aspectLabel} prompt with Krea 2:`, promptData.prompt);
-            await pipeline.run({ configuration: config, prompt: promptData.prompt });
+        console.log(`Generating ${promptData.aspectLabel} prompt with Krea 2:`, promptData.prompt);
+        await pipeline.run({ configuration: config, prompt: promptData.prompt });
     }
 }
 
