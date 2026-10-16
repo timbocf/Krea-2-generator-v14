@@ -1,8 +1,8 @@
 //@api-1.0
-// version 14
+// version 15
 // =========================================
 // KREA 2 MODULAR BATCH GENERATOR
-// Version 14 — Krea-only, predictable randomization
+// Version 15 — Solo Girl Batch mode + nationality trait compatibility
 // =========================================
 
 // =========================================
@@ -111,6 +111,152 @@ const nationalityPresets = [
     { label: "Polynesian/Pacific Islander", value: "Polynesian/Pacific Islander with warm brown skin and Polynesian facial features" },
     { label: "Ethiopian/East African", value: "Ethiopian/East African with deep brown skin and East African facial features" }
 ];
+
+
+// =========================================
+// NATIONALITY TRAIT COMPATIBILITY (v15)
+// =========================================
+// Maps each nationality preset LABEL to the eye colors, hair colors, hair
+// types and skin tones that are plausible for it. Used by
+// chooseCompatible() so separately-randomized traits never clash with the
+// subject's nationality (e.g. no blue eyes + platinum hair on a Japanese
+// subject). Values must match the preset *values* in eyeColorPresets,
+// hairColorPresets, hairTypePresets and skinTonePresets. Pinned/user-picked
+// values always win over this map.
+const NATIONALITY_TRAIT_COMPATIBILITY = {
+    "Caucasian": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "dark brown eyes", "amber eyes", "gray eyes"],
+        hair: ["blonde", "brunette", "black", "red", "auburn", "platinum blonde", "chestnut brown", "copper/ginger"],
+        hairTypes: ["straight", "wavy", "curly", "frizzy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin", "tanned sun-kissed skin", "olive skin"]
+    },
+    "Black": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "amber eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["kinky", "afro-textured", "curly", "wavy"],
+        skin: ["warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen", "caramel skin"]
+    },
+    "Mixed-Race": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "amber eyes", "green eyes"],
+        hair: ["black", "brunette", "chestnut brown"],
+        hairTypes: ["curly", "wavy", "kinky", "afro-textured", "straight"],
+        skin: ["golden-bronze skin", "caramel skin", "warm brown skin", "tanned sun-kissed skin", "olive skin"]
+    },
+    "Mexican": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
+        hair: ["black", "brunette", "chestnut brown"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["olive skin", "caramel skin", "golden-bronze skin", "warm brown skin", "tanned sun-kissed skin"]
+    },
+    "Indian": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["warm brown skin", "caramel skin", "golden-bronze skin", "olive skin"]
+    },
+    "Thai": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["golden-bronze skin", "caramel skin", "tanned sun-kissed skin", "warm brown skin"]
+    },
+    "Japanese": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Korean": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Filipina": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "tanned sun-kissed skin"]
+    },
+    "Brazilian": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes", "amber eyes"],
+        hair: ["black", "brunette", "chestnut brown", "blonde", "auburn"],
+        hairTypes: ["straight", "wavy", "curly", "frizzy"],
+        skin: ["olive skin", "tanned sun-kissed skin", "caramel skin", "golden-bronze skin", "warm brown skin"]
+    },
+    "Italian": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes"],
+        hair: ["black", "brunette", "chestnut brown", "auburn"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["olive skin", "tanned sun-kissed skin", "fair skin", "cream skin"]
+    },
+    "Scandinavian": {
+        eyes: ["blue eyes", "green eyes", "gray eyes", "hazel eyes"],
+        hair: ["blonde", "platinum blonde", "brunette", "red"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Russian/Eastern European": {
+        eyes: ["blue eyes", "green eyes", "gray eyes", "hazel eyes", "brown eyes"],
+        hair: ["blonde", "platinum blonde", "brunette", "chestnut brown", "red", "auburn"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Chinese": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Vietnamese": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["fair skin", "cream skin", "tanned sun-kissed skin", "golden-bronze skin"]
+    },
+    "Middle Eastern": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes", "amber eyes"],
+        hair: ["black", "brunette", "chestnut brown", "auburn"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["olive skin", "caramel skin", "tanned sun-kissed skin", "warm brown skin", "fair skin"]
+    },
+    "French": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "gray eyes"],
+        hair: ["blonde", "brunette", "chestnut brown", "black", "red", "auburn"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin", "olive skin"]
+    },
+    "German": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "gray eyes"],
+        hair: ["blonde", "platinum blonde", "brunette", "chestnut brown", "red"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Irish": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "gray eyes", "brown eyes"],
+        hair: ["red", "copper/ginger", "auburn", "blonde", "brunette", "chestnut brown"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Native American": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "olive skin"]
+    },
+    "Polynesian/Pacific Islander": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
+        hair: ["black", "brunette", "chestnut brown"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "dark skin"]
+    },
+    "Ethiopian/East African": {
+        eyes: ["brown eyes", "dark brown eyes", "amber eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["kinky", "afro-textured", "curly", "wavy"],
+        skin: ["warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen"]
+    }
+};
 
 const celebrityPresets = [
     { label: "My Baby", value: "curvy apple-shaped 35-year-old woman with large shapeless drooping breasts, a round ass, long curly 3a black hair, arms covered in red & green rose tattoos, hazel eyes" },
@@ -1039,8 +1185,8 @@ const IMAGE_COUNTS = [1, 2, 3, 4, 5, 10, 15, 20, 25, 50];
 const setup = requestFromUser("Batch Setup", "Continue", function () {
     const counts = (singular, plural) => [1, 2, 3, 4, 5].map(n => `${n} ${n === 1 ? singular : plural}`);
     return [
-        this.section("❖  Generation Mode", "Manual builds combinations. Subject Variations keeps the same person. Random Subjects changes only unspecified traits.", [
-            this.menu(1, ["Manual Combinations", "Subject Variations", "Random Subjects"]),
+        this.section("❖  Generation Mode", "Manual builds combinations. Subject Variations keeps the same person. Random Subjects changes only unspecified traits. Solo Girl Batch locks gender to woman and randomizes a nationality-compatible new subject per image.", [
+            this.menu(1, ["Manual Combinations", "Subject Variations", "Random Subjects", "Solo Girl Batch"]),
             this.menu(4, IMAGE_COUNTS.map(n => `${n} image${n === 1 ? "" : "s"}`))
         ]),
         this.section("❖  Batch Configurations", "Counts apply only to Manual Combinations. Krea 2 is the only model.", [
@@ -1053,7 +1199,7 @@ const setup = requestFromUser("Batch Setup", "Continue", function () {
         ])
     ];
 });
-const mode = ["manual", "variations", "random"][setup[0][0]] || "variations";
+const mode = ["manual", "variations", "random", "soloGirls"][setup[0][0]] || "variations";
 const randomizeEnabled = mode !== "manual";
 const randomImageCount = IMAGE_COUNTS[setup[0][1]] || 5;
 const setupData = setup[1];
@@ -1683,6 +1829,29 @@ const effectiveCameraChoices = cameraChoices.length > 0 ? cameraChoices : [DEFAU
 function choose(pinned, presets, enabled = true) {
     return pinned || (enabled ? randomPresetValue(presets) : "");
 }
+// Resolve a nationality label for trait-compatibility filtering. Pinned
+// nationalities are stored as full preset values; the random path stores
+// labels. Returns "" when the nationality is unknown.
+function resolveNationalityLabel(nationalityText) {
+    if (!nationalityText) return "";
+    if (NATIONALITY_TRAIT_COMPATIBILITY[nationalityText]) return nationalityText;
+    const hit = nationalityPresets.find(p => getPresetValue(p) === nationalityText);
+    return hit ? getPresetLabel(hit) : "";
+}
+
+// Like choose(), but when no pinned value is given it picks from the
+// nationality-compatible subset for `category` ("eyes" | "hair" |
+// "hairTypes" | "skin") instead of the full preset list. Falls back to the
+// full list when the nationality is unknown or has no entry.
+function chooseCompatible(pinned, presets, nationalityLabel, category, enabled = true) {
+    if (pinned) return pinned;
+    if (!enabled) return "";
+    const entry = nationalityLabel ? NATIONALITY_TRAIT_COMPATIBILITY[nationalityLabel] : null;
+    const subset = entry ? entry[category] : null;
+    if (subset && subset.length) return randomElement(subset);
+    return randomPresetValue(presets);
+}
+
 function hairText(color) {
     return color && !/\bhair\b/i.test(color) ? `${color} hair` : color;
 }
@@ -1700,8 +1869,10 @@ function buildRandomSubject(cfg) {
     const nationality = cfg.nationality || (randomIdentity
         ? getPresetLabel(randomElement(nationalityPresets)) : "");
     const age = choose(cfg.age, agePresets, randomIdentity);
-    const skin = choose(cfg.skin, skinTonePresets, randomIdentity && !cfg.nationality);
-    const eyes = choose(cfg.eyeColor, eyeColorPresets, randomIdentity);
+    // v15: keep separately-randomized traits compatible with the nationality.
+    const compatNationality = resolveNationalityLabel(nationality);
+    const skin = chooseCompatible(cfg.skin, skinTonePresets, compatNationality, "skin", randomIdentity && !cfg.nationality);
+    const eyes = chooseCompatible(cfg.eyeColor, eyeColorPresets, compatNationality, "eyes", randomIdentity);
     const lead = joinParts([nationality, gender]);
     const details = [age, skin ? `with ${skin}` : "", eyes, celebrity];
     const bodyFields = [
@@ -1718,8 +1889,8 @@ function buildRandomSubject(cfg) {
     if (!celebrity && !cfg.pinnedBuild && !cfg.pinnedBodyShape) details.push(randomPresetValue(overallBuildPresets));
     details.push(cfg.customBodyDetails, ...cfg.appearanceValues);
     const hasPinnedHair = Boolean(cfg.customHairstyle || cfg.hairstyleValues.length);
-    const hairType = choose(cfg.customHairType || cfg.pinnedHairType, hairTypePresets, !celebrity && !hasPinnedHair);
-    const hairColor = choose(cfg.customHairColor || cfg.pinnedHairColor, hairColorPresets, !celebrity);
+    const hairType = chooseCompatible(cfg.customHairType || cfg.pinnedHairType, hairTypePresets, compatNationality, "hairTypes", !celebrity && !hasPinnedHair);
+    const hairColor = chooseCompatible(cfg.customHairColor || cfg.pinnedHairColor, hairColorPresets, compatNationality, "hair", !celebrity);
     const hairLength = choose(cfg.customHairLength || cfg.pinnedHairLength, hairLengthPresets, !celebrity && !hasPinnedHair);
     const style = joinParts([...cfg.hairstyleValues, cfg.customHairstyle || (!celebrity && !hasPinnedHair && !cfg.pinnedHairLength && !cfg.customHairLength ? oneRandomStyle() : "")]);
     details.push(joinParts([hairLength, hairType, style, hairText(hairColor)]));
@@ -1780,8 +1951,10 @@ const artStyleChoices = artStyles.length ? artStyles : [DEFAULT_PROMPT_FALLBACKS
 
 if (randomizeEnabled) {
     const sameSubject = mode === "variations" ? buildRandomSubject(randomSubjectConfig) : null;
+    // v15 Solo Girl Batch: fresh nationality-compatible subject per image, gender locked to woman.
+    const soloGirlConfig = mode === "soloGirls" ? { ...randomSubjectConfig, gender: "woman" } : null;
     for (let i = 0; i < randomImageCount; i++) {
-        const subject = sameSubject || buildRandomSubject(randomSubjectConfig);
+        const subject = sameSubject || buildRandomSubject(soloGirlConfig || randomSubjectConfig);
         const aspectOption = randomElement(selectedAspectOptions);
         finalPrompts.push(makePrompt({
             subject,
@@ -1847,7 +2020,7 @@ async function runBatch() {
         const modelSummary = KREA_MODEL.label;
         const totalImages = finalPrompts.length;
         const modeSummary = randomizeEnabled
-            ? `${finalPrompts.length} image(s) in ${mode === "variations" ? "Subject Variations" : "Random Subjects"} mode. Manual selections are preserved.`
+            ? `${finalPrompts.length} image(s) in ${mode === "variations" ? "Subject Variations" : mode === "soloGirls" ? "Solo Girl Batch" : "Random Subjects"} mode. Manual selections are preserved.`
             : `This batch will generate ${totalImages} image(s) using ${aspectSummary} on ${modelSummary}.`;
 
         return [
