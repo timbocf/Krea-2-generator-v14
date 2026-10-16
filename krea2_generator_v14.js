@@ -1,8 +1,8 @@
 //@api-1.0
-// version 18
+// version 17
 // =========================================
 // KREA 2 MODULAR BATCH GENERATOR
-// Version 18 — Heritage descriptions replace trait menus
+// Version 17 — Trimmed weird subject options
 // =========================================
 
 // =========================================
@@ -88,30 +88,175 @@ const genderPresets = ["woman", "man"];
 
 // --- NATIONALITY / ETHNICITY ---
 const nationalityPresets = [
-    { label: "Caucasian", value: "Caucasian with fair skin, soft Western European facial features, hazel eyes, and straight dark blonde hair" },
-    { label: "Black", value: "Black with rich deep brown skin, classic African facial features, dark brown eyes, and short coily black hair" },
-    { label: "Mixed-Race", value: "Mixed-race with golden-bronze skin, blended African and European features, dark brown eyes, and voluminous dark curls" },
-    { label: "Mexican", value: "Mexican with warm olive-tan skin, Indigenous Mesoamerican facial features, dark brown eyes, and thick dark wavy hair" },
-    { label: "Indian", value: "Indian with warm brown skin, South Asian facial features, dark brown eyes, and long thick black hair" },
-    { label: "Thai", value: "Thai with golden-tan skin, Southeast Asian facial features, dark almond-shaped eyes, and straight black hair" },
-    { label: "Japanese", value: "Japanese with fair skin, East Asian facial features, dark brown almond-shaped eyes, and straight black hair" },
-    { label: "Korean", value: "Korean with fair porcelain skin, East Asian facial features, dark almond eyes, and sleek straight black hair" },
-    { label: "Filipina", value: "Filipina with warm tan skin, Southeast Asian facial features, dark brown eyes, and long dark wavy hair" },
-    { label: "Brazilian", value: "Brazilian with sun-kissed olive skin, blended European, African and Indigenous features, brown eyes, and wavy dark hair" },
-    { label: "Italian", value: "Italian with warm olive skin, Mediterranean facial features, dark brown eyes, and thick dark wavy hair" },
-    { label: "Scandinavian", value: "Scandinavian with fair skin, Nordic facial features, blue eyes, and straight blonde hair" },
-    { label: "Russian/Eastern European", value: "Russian with fair skin, Slavic facial features, light grey eyes, and straight light brown hair" },
-    { label: "Chinese", value: "Chinese with fair skin, East Asian facial features, dark almond-shaped eyes, and straight black hair" },
-    { label: "Vietnamese", value: "Vietnamese with warm tan skin, Southeast Asian facial features, dark almond eyes, and long straight black hair" },
-    { label: "Middle Eastern", value: "Middle Eastern with olive skin, striking dark eyes, defined eyebrows, and thick dark wavy hair" },
-    { label: "French", value: "French with fair skin, classic Western European features, light brown eyes, and dark brown hair" },
-    { label: "German", value: "German with fair skin, Central European facial features, blue-grey eyes, and straight blonde hair" },
-    { label: "Irish", value: "Irish with fair freckled skin, Celtic facial features, green eyes, and wavy red hair" },
-    { label: "Native American", value: "Native American with warm bronze skin, Indigenous American facial features, dark brown eyes, and long straight black hair" },
-    { label: "Polynesian/Pacific Islander", value: "Polynesian with warm brown skin, Polynesian facial features, dark brown eyes, and thick dark wavy hair" },
-    { label: "Ethiopian/East African", value: "Ethiopian with deep brown skin, East African facial features, dark expressive eyes, and short coily black hair" }
+    { label: "Caucasian", value: "Caucasian with Western European facial features" },
+    { label: "Black", value: "Black with rich deep skin tone and classic African facial features" },
+    { label: "Mixed-Race", value: "Mixed-race with a natural blend of African and European facial features, deep golden-bronze skin, softly flared nostrils, a straight natural nose bridge, high defined cheekbones, thick naturally arched eyebrows, dark brown eyes, thick dark brown hair with thick wavy curls, a curvy hourglass figure, and a round ass" },
+    { label: "Mexican", value: "Mexican with prominent Indigenous Mesoamerican facial features, warm olive-tan skin, dark brown eyes, thick dark eyebrows, thick dark wavy hair, plump lips, and a curvy hourglass figure" },
+    { label: "Indian", value: "Indian with warm brown skin, dark eyes, and South Asian facial features" },
+    { label: "Thai", value: "Thai with golden-tan skin and Southeast Asian facial features" },
+    { label: "Japanese", value: "Japanese with fair skin and East Asian facial features" },
+    { label: "Korean", value: "Korean with fair porcelain skin and East Asian facial features" },
+    { label: "Filipina", value: "Filipina with warm tan skin and Southeast Asian facial features" },
+    { label: "Brazilian", value: "Brazilian with sun-kissed olive skin and a blend of European, African, and Indigenous features" },
+    { label: "Italian", value: "Italian with olive skin and Mediterranean facial features" },
+    { label: "Scandinavian", value: "Scandinavian with fair skin, light hair, and Nordic facial features" },
+    { label: "Russian/Eastern European", value: "Russian/Eastern European with fair skin and Slavic facial features" },
+    { label: "Chinese", value: "Chinese with fair skin and East Asian facial features" },
+    { label: "Vietnamese", value: "Vietnamese with warm tan skin and Southeast Asian facial features" },
+    { label: "Middle Eastern", value: "Middle Eastern with olive skin, dark hair, and Middle Eastern facial features" },
+    { label: "French", value: "French with fair skin and classic Western European features" },
+    { label: "German", value: "German with fair skin and Central European facial features" },
+    { label: "Irish", value: "Irish with fair skin, freckles, and Celtic facial features" },
+    { label: "Native American", value: "Native American with warm bronze skin and Indigenous American facial features" },
+    { label: "Polynesian/Pacific Islander", value: "Polynesian/Pacific Islander with warm brown skin and Polynesian facial features" },
+    { label: "Ethiopian/East African", value: "Ethiopian/East African with deep brown skin and East African facial features" }
 ];
 
+
+// =========================================
+// NATIONALITY TRAIT COMPATIBILITY (v15)
+// =========================================
+// Maps each nationality preset LABEL to the eye colors, hair colors, hair
+// types and skin tones that are plausible for it. Used by
+// chooseCompatible() so separately-randomized traits never clash with the
+// subject's nationality (e.g. no blue eyes + platinum hair on a Japanese
+// subject). Values must match the preset *values* in eyeColorPresets,
+// hairColorPresets, hairTypePresets and skinTonePresets. Pinned/user-picked
+// values always win over this map.
+const NATIONALITY_TRAIT_COMPATIBILITY = {
+    "Caucasian": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "dark brown eyes", "amber eyes", "gray eyes"],
+        hair: ["blonde", "brunette", "black", "red", "auburn", "platinum blonde", "chestnut brown", "copper/ginger"],
+        hairTypes: ["straight", "wavy", "curly", "frizzy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin", "tanned sun-kissed skin", "olive skin"]
+    },
+    "Black": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "amber eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["kinky", "afro-textured", "curly", "wavy"],
+        skin: ["warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen", "caramel skin"]
+    },
+    "Mixed-Race": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "amber eyes", "green eyes"],
+        hair: ["black", "brunette", "chestnut brown"],
+        hairTypes: ["curly", "wavy", "kinky", "afro-textured", "straight"],
+        skin: ["golden-bronze skin", "caramel skin", "warm brown skin", "tanned sun-kissed skin", "olive skin"]
+    },
+    "Mexican": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
+        hair: ["black", "brunette", "chestnut brown"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["olive skin", "caramel skin", "golden-bronze skin", "warm brown skin", "tanned sun-kissed skin"]
+    },
+    "Indian": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["warm brown skin", "caramel skin", "golden-bronze skin", "olive skin"]
+    },
+    "Thai": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["golden-bronze skin", "caramel skin", "tanned sun-kissed skin", "warm brown skin"]
+    },
+    "Japanese": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Korean": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Filipina": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "tanned sun-kissed skin"]
+    },
+    "Brazilian": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes", "amber eyes"],
+        hair: ["black", "brunette", "chestnut brown", "blonde", "auburn"],
+        hairTypes: ["straight", "wavy", "curly", "frizzy"],
+        skin: ["olive skin", "tanned sun-kissed skin", "caramel skin", "golden-bronze skin", "warm brown skin"]
+    },
+    "Italian": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes"],
+        hair: ["black", "brunette", "chestnut brown", "auburn"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["olive skin", "tanned sun-kissed skin", "fair skin", "cream skin"]
+    },
+    "Scandinavian": {
+        eyes: ["blue eyes", "green eyes", "gray eyes", "hazel eyes"],
+        hair: ["blonde", "platinum blonde", "brunette", "red"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Russian/Eastern European": {
+        eyes: ["blue eyes", "green eyes", "gray eyes", "hazel eyes", "brown eyes"],
+        hair: ["blonde", "platinum blonde", "brunette", "chestnut brown", "red", "auburn"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Chinese": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Vietnamese": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["fair skin", "cream skin", "tanned sun-kissed skin", "golden-bronze skin"]
+    },
+    "Middle Eastern": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes", "amber eyes"],
+        hair: ["black", "brunette", "chestnut brown", "auburn"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["olive skin", "caramel skin", "tanned sun-kissed skin", "warm brown skin", "fair skin"]
+    },
+    "French": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "gray eyes"],
+        hair: ["blonde", "brunette", "chestnut brown", "black", "red", "auburn"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin", "olive skin"]
+    },
+    "German": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "gray eyes"],
+        hair: ["blonde", "platinum blonde", "brunette", "chestnut brown", "red"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Irish": {
+        eyes: ["blue eyes", "green eyes", "hazel eyes", "gray eyes", "brown eyes"],
+        hair: ["red", "copper/ginger", "auburn", "blonde", "brunette", "chestnut brown"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
+    },
+    "Native American": {
+        eyes: ["brown eyes", "dark brown eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["straight", "wavy"],
+        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "olive skin"]
+    },
+    "Polynesian/Pacific Islander": {
+        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
+        hair: ["black", "brunette", "chestnut brown"],
+        hairTypes: ["straight", "wavy", "curly"],
+        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "dark skin"]
+    },
+    "Ethiopian/East African": {
+        eyes: ["brown eyes", "dark brown eyes", "amber eyes"],
+        hair: ["black", "brunette"],
+        hairTypes: ["kinky", "afro-textured", "curly", "wavy"],
+        skin: ["warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen"]
+    }
+};
 
 const celebrityPresets = [
     { label: "My Baby", value: "curvy apple-shaped 35-year-old woman with large shapeless drooping breasts, a round ass, long curly 3a black hair, arms covered in red & green rose tattoos, hazel eyes" },
@@ -138,7 +283,24 @@ const agePresets = [
 ];
 
 // --- SKIN TONE ---
+const skinTonePresets = [
+    "porcelain skin", "pale skin", "fair skin", { label: "tanned skin", value: "tanned sun-kissed skin" }, "cream skin",
+    "olive skin", "caramel skin", "golden-bronze skin", "warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen"
+];
+
 // --- EYE COLOR ---
+const eyeColorPresets = [
+    { label: "Blue", value: "blue eyes" },
+    { label: "Green", value: "green eyes" },
+    { label: "Hazel", value: "hazel eyes" },
+    { label: "Brown", value: "brown eyes" },
+    { label: "Dark brown", value: "dark brown eyes" },
+    { label: "Amber", value: "amber eyes" },
+    { label: "Gray", value: "gray eyes" },
+    { label: "Violet", value: "violet eyes" },
+    { label: "Heterochromia (blue/brown)", value: "eyes that have heterochromia, one eye blue, the other eye brown" }
+];
+
 // =========================================
 // BODY / PHYSIQUE
 // =========================================
@@ -267,7 +429,13 @@ const appearanceSwitchGroups = [
     { title: "Hair Details", description: "Additional hair-shaving and hair-structure details", presets: hairDetailPresets }
 ];
 
+const hairColorPresets = [
+    "blonde", "brunette", "black", "red", "auburn", "salt & pepper", "brown salt & pepper", "silver",
+    "platinum blonde", "copper/ginger", "chestnut brown", "ombre", "balayage", "pastel pink", "pastel blue/purple"
+];
 const hairLengthPresets = ["short", "medium-length", "long", "very long"];
+const hairTypePresets = ["straight", "wavy", "curly", "kinky", "afro-textured", "frizzy"];
+
 const hairstyleGroups = [
     {
         title: "Updos and braided styles",
@@ -572,38 +740,38 @@ const clothingPresets = [
 // =========================================
 
 const complexActionPresets = [
-    { label: "Wall Pose — back against wall, arms raised, one knee bent", value: "leaning back against a wall, with one knee bent with the foot pressed against the wall, arms raised high above head and hands clasped, lips parted." },
-    { label: "Wall Pose — back against wall, arms down, one knee bent", value: "leaning back against a wall, with one knee bent with the foot pressed against the wall, arms at {possessive} sides, pressed against the wall, lips parted." },
-    { label: "Bed Lean (on elbows) — elbows on bed, ass toward camera", value: "standing at the edge of a bed, leaning forward, feet on floor, elbows on the bed, pushing {possessive} ass toward the camera" },
-    { label: "Bed Lean (face-down) — cheek on mattress, looking sideways", value: "standing at the edge of a bed, leaning forward, feet on floor, one cheek touching the bed, looking to the side at the camera, pushing {possessive} ass toward the camera" },
-    { label: "Ass-Up Lean (on bed or floor) — on knees, face forward, back arched", value: "on {possessive} knees, leaning forward, {possessive} face in the foreground, back arched, ass high in the air, arms stretched out in front of {objectPronoun}" },
-    { label: "Deep Squat, Viewed From Below — knees wide, toes pointed, hands on knees", value: "worms-eye view, squatting with {possessive} knees spread wide and on the tips of {possessive} toes, hands resting on {possessive} knees" },
-    { label: "Cross-Legged Floor Sit — seated, leaning back, relaxed smile", value: "sitting cross-legged on the floor, leaning back slightly on {possessive} hands, looking directly into the camera with a relaxed smile" },
-    { label: "Spread Eagle (Lying Back) — lying back, legs spread wide, hands holding legs", value: "laying on {possessive} back with {possessive} legs raised and spread wide, feet wide apart, holding {possessive} legs in the air with {possessive} hands, looking through {possessive} open legs at the camera" },
-    { label: "Back-on-Bed (Legs Straight Up) — legs straight and elevated, knees locked", value: "laying on a bed on {possessive} back with {possessive} butt at the edge of the bed, {possessive} legs straight and elevated into the air, knees locked, bending at waist only" },
-    { label: "Deep Waist Bend — legs straight, hands on shelf, surprise look", value: "leaning forward to grab something off of a lower level of a bookshelf, legs straight, knees locked, bending at waist only, looking at the camera sideways, with {possessive} hand covering {possessive} mouth and wide-eyed open-mouthed look of surprise" },
-    { label: "Shower View (From Below) — camera below, looking up through water", value: "standing and rubbing soapy lather all over {possessive} body in the shower with a soapy loofah, water and soap cascading down {possessive} nude body, looking up at the water as it streams out of the showerhead, the camera sitting candidly below {objectPronoun} looking up" },
-    { label: "Shower View (From Above)", value: "standing and rubbing soapy lather all over {possessive} body in the shower with a soapy loofah, water and soap cascading down {possessive} nude body, looking up at the water as it streams out of the showerhead, the camera sitting candidly above {objectPronoun} looking down" },
-    { label: "Shower View (With a Man)", value: "standing and rubbing soapy lather all over a man's nude body in the shower with a soapy loofah, water streaming out of the showerhead onto their nude bodies" },
-    { label: "Doorway Pose — foot on frame, knee near face", value: "standing in a bedroom doorway. {possessive} back is against one side of the door frame, and one of {possessive} feet is elevated to eye-level and the sole of {possessive} shoe is pressing against the opposite door frame, putting {possessive} knee close to {possessive} face." },
-    { label: "Doorway Pose (Just Standing)", value: "standing in a bedroom doorway." },
-    { label: "Forward Lean (hands on knees) - facing back, ass toward camera", value: "standing, facing away from the camera, leaning forward, {possessive} ass toward the camera, hands on {possessive} knees, looking back at the camera, legs straight, knees locked" },
-    { label: "Reclining back - resting on elbow, other hand touching crotch", value: "lying on {possessive} side, with the top leg bent high, hand lightly between {possessive} thighs" },
-    { label: "Morning Stretch", value: "standing, mid-stretch reaching both arms overhead while rising up on {possessive} toes, hands in {possessive} hair, back arched, chest pressed forward, shoulders pulled back." },
-    { label: "Lying in a Windowsill", value: "lying on {possessive} stomach on a sunlit windowsill, chin resting on {possessive} hands, legs bent at the knees and crossed at the ankles in the air" },
-    { label: "Lying on a Couch (Foot on Backrest)", value: "lying on {possessive} back on a sofa, one leg hooked over the backrest, other foot on the floor" },
-    { label: "Lying on a Couch (Foot on Armrest)", value: "lying on {possessive} back on a sofa, one leg resting on opposite armrest, other foot on the floor" },
-    { label: "On Knees, Ass Spread", value: "{subjectPronoun} is on {possessive} knees facing away, looking back over {possessive} shoulder while reaching back to spread {possessive} ass cheeks apart" },
-    { label: "Kneeling in Front of a Fireplace - wearing pearls and heels", value: "kneeling on a soft rug in front of a fireplace, hands on {possessive} thighs, chest pushed forward, wearing a long pearl necklace and high heels" },
-    { label: "On All Fours", value: "on all fours, head turned to the side, back arched hard, ass toward the camera" },
-    { label: "Crawling Toward Camera", value: "crawling toward the camera on all fours" },
-    { label: "Leaning over Counter in Kitchen - in an Apron", value: "standing, leaning over a kitchen counter, resting on elbows, ass pushed out, looking back at camera, wearing only a tiny apron." },
-    { label: "Bathroom Mirror Selfie", value: "taking a selfie in a bathroom mirror" },
-    { label: "Full-Length Mirror Reflection (standing)", value: "standing in front of a full-length mirror while pulling {possessive} hair up" },
-    { label: "Full-Length Mirror Reflection (sitting)", value: "sitting in front of a full-length mirror looking at {possessive} reflection" },
-    { label: "Applying Lipstick in a Bathroom", value: "standing in a bathroom, leaning over the counter, close to the mirror, applying deep red lipstick. Facing away from the camera." },
-    { label: "Shy, in a Doorway", value: "standing in a bedroom doorway, {subjectPronoun} is touching {possessive} index finger to {possessive} bottom lip with a shy embarrassed smile and biting {possessive} bottom lip. {possessive} legs are crossed and {possessive} free hand is above {possessive} head touching the door frame." },
-    { label: "Leaning against Glass Door on a Balcony", value: "leaning against a glass door on the balcony of a third-floor Manhattan apartment. {possessive} legs are crossed and {subjectPronoun} is smoking a cigarette, blowing the smoke up into the air." }
+    { label: "Wall Pose — back against wall, arms raised, one knee bent", value: "leaning back against a wall, with one knee bent with the foot pressed against the wall, arms raised high above head and hands clasped, lips parted.", tags: ["indoor", "location", "standing"] },
+    { label: "Wall Pose — back against wall, arms down, one knee bent", value: "leaning back against a wall, with one knee bent with the foot pressed against the wall, arms at {possessive} sides, pressed against the wall, lips parted.", tags: ["indoor", "location", "standing"] },
+    { label: "Bed Lean (on elbows) — elbows on bed, ass toward camera", value: "standing at the edge of a bed, leaning forward, feet on floor, elbows on the bed, pushing {possessive} ass toward the camera", tags: ["indoor", "location", "floor", "handsBusy"] },
+    { label: "Bed Lean (face-down) — cheek on mattress, looking sideways", value: "standing at the edge of a bed, leaning forward, feet on floor, one cheek touching the bed, looking to the side at the camera, pushing {possessive} ass toward the camera", tags: ["indoor", "location", "floor"] },
+    { label: "Ass-Up Lean (on bed or floor) — on knees, face forward, back arched", value: "on {possessive} knees, leaning forward, {possessive} face in the foreground, back arched, ass high in the air, arms stretched out in front of {objectPronoun}", tags: ["indoor", "location", "floor", "handsBusy"] },
+    { label: "Deep Squat, Viewed From Below — knees wide, toes pointed, hands on knees", value: "worms-eye view, squatting with {possessive} knees spread wide and on the tips of {possessive} toes, hands resting on {possessive} knees", tags: ["indoor", "location"] },
+    { label: "Cross-Legged Floor Sit — seated, leaning back, relaxed smile", value: "sitting cross-legged on the floor, leaning back slightly on {possessive} hands, looking directly into the camera with a relaxed smile", tags: ["indoor", "location", "floor", "sitting"] },
+    { label: "Spread Eagle (Lying Back) — lying back, legs spread wide, hands holding legs", value: "laying on {possessive} back with {possessive} legs raised and spread wide, feet wide apart, holding {possessive} legs in the air with {possessive} hands, looking through {possessive} open legs at the camera", tags: ["indoor", "location", "floor"] },
+    { label: "Back-on-Bed (Legs Straight Up) — legs straight and elevated, knees locked", value: "laying on a bed on {possessive} back with {possessive} butt at the edge of the bed, {possessive} legs straight and elevated into the air, knees locked, bending at waist only", tags: ["indoor", "location", "floor"] },
+    { label: "Deep Waist Bend — legs straight, hands on shelf, surprise look", value: "leaning forward to grab something off of a lower level of a bookshelf, legs straight, knees locked, bending at waist only, looking at the camera sideways, with {possessive} hand covering {possessive} mouth and wide-eyed open-mouthed look of surprise", tags: ["indoor", "location", "standing"] },
+    { label: "Shower View (From Below) — camera below, looking up through water", value: "standing and rubbing soapy lather all over {possessive} body in the shower with a soapy loofah, water and soap cascading down {possessive} nude body, looking up at the water as it streams out of the showerhead, the camera sitting candidly below {objectPronoun} looking up", tags: ["indoor", "location", "water"] },
+    { label: "Shower View (From Above)", value: "standing and rubbing soapy lather all over {possessive} body in the shower with a soapy loofah, water and soap cascading down {possessive} nude body, looking up at the water as it streams out of the showerhead, the camera sitting candidly above {objectPronoun} looking down", tags: ["indoor", "location", "water"] },
+    { label: "Shower View (With a Man)", value: "standing and rubbing soapy lather all over a man's nude body in the shower with a soapy loofah, water streaming out of the showerhead onto their nude bodies", tags: ["indoor", "location", "water"] },
+    { label: "Doorway Pose — foot on frame, knee near face", value: "standing in a bedroom doorway. {possessive} back is against one side of the door frame, and one of {possessive} feet is elevated to eye-level and the sole of {possessive} shoe is pressing against the opposite door frame, putting {possessive} knee close to {possessive} face.", tags: ["indoor", "location", "standing"] },
+    { label: "Doorway Pose (Just Standing)", value: "standing in a bedroom doorway.", tags: ["indoor", "location", "standing"] },
+    { label: "Forward Lean (hands on knees) - facing back, ass toward camera", value: "standing, facing away from the camera, leaning forward, {possessive} ass toward the camera, hands on {possessive} knees, looking back at the camera, legs straight, knees locked", tags: ["indoor", "location", "standing"] },
+    { label: "Reclining back - resting on elbow, other hand touching crotch", value: "lying on {possessive} side, with the top leg bent high, hand lightly between {possessive} thighs", tags: ["indoor", "location", "floor"] },
+    { label: "Morning Stretch", value: "standing, mid-stretch reaching both arms overhead while rising up on {possessive} toes, hands in {possessive} hair, back arched, chest pressed forward, shoulders pulled back.", tags: ["indoor"] },
+    { label: "Lying in a Windowsill", value: "lying on {possessive} stomach on a sunlit windowsill, chin resting on {possessive} hands, legs bent at the knees and crossed at the ankles in the air", tags: ["indoor", "location", "floor"] },
+    { label: "Lying on a Couch (Foot on Backrest)", value: "lying on {possessive} back on a sofa, one leg hooked over the backrest, other foot on the floor", tags: ["indoor", "location", "floor"] },
+    { label: "Lying on a Couch (Foot on Armrest)", value: "lying on {possessive} back on a sofa, one leg resting on opposite armrest, other foot on the floor", tags: ["indoor", "location", "floor"] },
+    { label: "On Knees, Ass Spread", value: "{subjectPronoun} is on {possessive} knees facing away, looking back over {possessive} shoulder while reaching back to spread {possessive} ass cheeks apart", tags: ["indoor", "location", "floor", "handsBusy"] },
+    { label: "Kneeling in Front of a Fireplace - wearing pearls and heels", value: "kneeling on a soft rug in front of a fireplace, hands on {possessive} thighs, chest pushed forward, wearing a long pearl necklace and high heels", tags: ["indoor", "location", "floor"] },
+    { label: "On All Fours", value: "on all fours, head turned to the side, back arched hard, ass toward the camera", tags: ["floor", "handsBusy"] },
+    { label: "Crawling Toward Camera", value: "crawling toward the camera on all fours", tags: ["floor", "handsBusy"] },
+    { label: "Leaning over Counter in Kitchen - in an Apron", value: "standing, leaning over a kitchen counter, resting on elbows, ass pushed out, looking back at camera, wearing only a tiny apron.", tags: ["indoor", "location", "standing"] },
+    { label: "Bathroom Mirror Selfie", value: "taking a selfie in a bathroom mirror", tags: ["indoor", "location", "standing"] },
+    { label: "Full-Length Mirror Reflection (standing)", value: "standing in front of a full-length mirror while pulling {possessive} hair up", tags: ["indoor", "location", "standing"] },
+    { label: "Full-Length Mirror Reflection (sitting)", value: "sitting in front of a full-length mirror looking at {possessive} reflection", tags: ["indoor", "location", "sitting"] },
+    { label: "Applying Lipstick in a Bathroom", value: "standing in a bathroom, leaning over the counter, close to the mirror, applying deep red lipstick. Facing away from the camera.", tags: ["indoor", "location"] },
+    { label: "Shy, in a Doorway", value: "standing in a bedroom doorway, {subjectPronoun} is touching {possessive} index finger to {possessive} bottom lip with a shy embarrassed smile and biting {possessive} bottom lip. {possessive} legs are crossed and {possessive} free hand is above {possessive} head touching the door frame.", tags: ["indoor", "location", "standing"] },
+    { label: "Leaning against Glass Door on a Balcony", value: "leaning against a glass door on the balcony of a third-floor Manhattan apartment. {possessive} legs are crossed and {subjectPronoun} is smoking a cigarette, blowing the smoke up into the air.", tags: ["outdoor", "location", "standing"] }
 ];
 
 // =========================================
@@ -615,19 +783,19 @@ const actionGroups = [
         title: "Position",
         description: "Pose setup choices",
         presets: [
-            "standing",
-            "standing in a doorway",
-            "sitting",
-            "laying",
-            "on {possessive} back",
-            "on {possessive} side",
-            "facedown",
-            "on a bed",
-            "on a thick carpeted floor",
-            "on {possessive} hands and knees",
-            "crawling toward the camera",
-            "{possessive} butt at the edge of the bed",
-            "{possessive} face in the foreground"
+            { label: "standing", value: "standing", tags: ["standing"] },
+            { label: "standing in a doorway", value: "standing in a doorway", tags: ["standing", "location", "indoor"] },
+            { label: "sitting", value: "sitting", tags: ["sitting"] },
+            { label: "laying", value: "laying", tags: ["floor"] },
+            { label: "on {possessive} back", value: "on {possessive} back", tags: ["floor"] },
+            { label: "on {possessive} side", value: "on {possessive} side", tags: ["floor"] },
+            { label: "facedown", value: "facedown", tags: ["floor", "handsBusy"] },
+            { label: "on a bed", value: "on a bed", tags: ["floor", "location", "indoor"] },
+            { label: "on a thick carpeted floor", value: "on a thick carpeted floor", tags: ["floor", "location", "indoor"] },
+            { label: "on {possessive} hands and knees", value: "on {possessive} hands and knees", tags: ["floor", "handsBusy"] },
+            { label: "crawling toward the camera", value: "crawling toward the camera", tags: ["floor", "handsBusy"] },
+            { label: "{possessive} butt at the edge of the bed", value: "{possessive} butt at the edge of the bed", tags: ["floor", "location", "indoor"] },
+            { label: "{possessive} face in the foreground", value: "{possessive} face in the foreground", tags: [] }
         ]
     },
     {
@@ -706,44 +874,44 @@ const actionGroups = [
         title: "Legs",
         description: "Leg and body alignment",
         presets: [
-            "legs straight",
-            "legs elevated into the air",
-            "feet elevated into the air",
-            "knees locked",
-            "knees bent",
-            "one knee bent",
-            "one leg raised",
-            "one foot on the wall",
-            "feet spread wide",
-            "feet together",
-            "feet crossed",
-            "1 foot against door frame",
-            "{possessive} ass high in the air",
-            "back arched",
-            "chest puffed out",
-            "knees together",
-            "shoulders back",
-            "leaning forward",
-            "bending at waist only"
+            { label: "legs straight", value: "legs straight", tags: [] },
+            { label: "legs elevated into the air", value: "legs elevated into the air", tags: [] },
+            { label: "feet elevated into the air", value: "feet elevated into the air", tags: [] },
+            { label: "knees locked", value: "knees locked", tags: ["upright"] },
+            { label: "knees bent", value: "knees bent", tags: [] },
+            { label: "one knee bent", value: "one knee bent", tags: [] },
+            { label: "one leg raised", value: "one leg raised", tags: [] },
+            { label: "one foot on the wall", value: "one foot on the wall", tags: ["upright"] },
+            { label: "feet spread wide", value: "feet spread wide", tags: [] },
+            { label: "feet together", value: "feet together", tags: ["upright"] },
+            { label: "feet crossed", value: "feet crossed", tags: ["upright"] },
+            { label: "1 foot against door frame", value: "1 foot against door frame", tags: ["upright"] },
+            { label: "{possessive} ass high in the air", value: "{possessive} ass high in the air", tags: [] },
+            { label: "back arched", value: "back arched", tags: [] },
+            { label: "chest puffed out", value: "chest puffed out", tags: ["upright"] },
+            { label: "knees together", value: "knees together", tags: [] },
+            { label: "shoulders back", value: "shoulders back", tags: ["upright"] },
+            { label: "leaning forward", value: "leaning forward", tags: ["upright"] },
+            { label: "bending at waist only", value: "bending at waist only", tags: ["upright"] }
         ]
     },
     {
         title: "Arms",
         description: "Hand and arm placement",
         presets: [
-            "arms raised high above {possessive} head",
-            "arms stretched out in front of {objectPronoun}",
-            "hands clasped together",
-            "on {possessive} elbows",
-            "elbows resting on bed",
-            "hands on hips",
-            "hands on waist",
-            "hands on breasts",
-            "hands in hair",
-            "hands on knees",
-            "hands lightly touching upper chest area",
-            "hands on ass",
-            "hands spreading ass cheeks"
+            { label: "arms raised high above {possessive} head", value: "arms raised high above {possessive} head", tags: ["hands"] },
+            { label: "arms stretched out in front of {objectPronoun}", value: "arms stretched out in front of {objectPronoun}", tags: ["hands"] },
+            { label: "hands clasped together", value: "hands clasped together", tags: ["hands"] },
+            { label: "on {possessive} elbows", value: "on {possessive} elbows", tags: ["hands"] },
+            { label: "elbows resting on bed", value: "elbows resting on bed", tags: ["hands"] },
+            { label: "hands on hips", value: "hands on hips", tags: ["hands"] },
+            { label: "hands on waist", value: "hands on waist", tags: ["hands"] },
+            { label: "hands on breasts", value: "hands on breasts", tags: ["hands"] },
+            { label: "hands in hair", value: "hands in hair", tags: ["hands"] },
+            { label: "hands on knees", value: "hands on knees", tags: ["hands"] },
+            { label: "hands lightly touching upper chest area", value: "hands lightly touching upper chest area", tags: ["hands"] },
+            { label: "hands on ass", value: "hands on ass", tags: ["hands"] },
+            { label: "hands spreading ass cheeks", value: "hands spreading ass cheeks", tags: ["hands"] }
         ]
     },
     {
@@ -774,22 +942,22 @@ const actionGroups = [
         title: "Setting",
         description: "Scene and environment",
         presets: [
-            { label: "in the shower", value: "in a walk-in shower, with wet hair and wet body, water cascading down {possessive} wet body" },
-            "in a bedroom",
-            "in a kitchen",
-            "in the backseat of a car",
-            "in a surgical theatre",
-            "in a crowded city street",
-            "in a glade",
-            "on an office desk",
-            "at a poolside",
-            "on a beach at sunset",
-            "in a nightclub",
-            "in a hotel room",
-            "on a rooftop at night",
-            "in an elevator",
-            "in a library",
-            "in a locker room"
+            { label: "in the shower", value: "in a walk-in shower, with wet hair and wet body, water cascading down {possessive} wet body", tags: ["indoor", "water"] },
+            { label: "in a bedroom", value: "in a bedroom", tags: ["indoor"] },
+            { label: "in a kitchen", value: "in a kitchen", tags: ["indoor"] },
+            { label: "in the backseat of a car", value: "in the backseat of a car", tags: ["indoor"] },
+            { label: "in a surgical theatre", value: "in a surgical theatre", tags: ["indoor"] },
+            { label: "in a crowded city street", value: "in a crowded city street", tags: ["outdoor", "urban"] },
+            { label: "in a glade", value: "in a glade", tags: ["outdoor", "nature"] },
+            { label: "on an office desk", value: "on an office desk", tags: ["indoor"] },
+            { label: "at a poolside", value: "at a poolside", tags: ["outdoor", "water"] },
+            { label: "on a beach at sunset", value: "on a beach at sunset", tags: ["outdoor", "water"] },
+            { label: "in a nightclub", value: "in a nightclub", tags: ["indoor", "night"] },
+            { label: "in a hotel room", value: "in a hotel room", tags: ["indoor"] },
+            { label: "on a rooftop at night", value: "on a rooftop at night", tags: ["outdoor", "night"] },
+            { label: "in an elevator", value: "in an elevator", tags: ["indoor"] },
+            { label: "in a library", value: "in a library", tags: ["indoor"] },
+            { label: "in a locker room", value: "in a locker room", tags: ["indoor"] }
         ]
     }
 ];
@@ -897,15 +1065,15 @@ const timeOfDayPresets = [
 ];
 
 const naturalLightingPresets = [
-    { label: "Direct sunlight", value: "direct harsh sunlight with hard shadows" },
-    { label: "Overcast/soft daylight", value: "diffused daylight with soft ambient light" },
-    { label: "Window daylight", value: "soft window light with indoor natural lighting" },
-    { label: "Curtains/sheers", value: "sunlight filtered through sheer curtains, creating soft diffused window light" },
-    { label: "Golden hour rays", value: "warm sunbeams, golden hour light, and subtle volumetric glow" },
-    { label: "Moonlight/night", value: "cool moonlight with deep night ambience" },
-    { label: "Urban night (street/neon)", value: "neon glow, street lamp lighting, and urban night atmosphere" },
-    { label: "Warm flame (candle/fire)", value: "warm candlelight glow and fireplace ambient light" },
-    { label: "Practical lamps (indoor lamps)", value: "warm practical lamp lighting and interior ambient lights" }
+    { label: "Direct sunlight", value: "direct harsh sunlight with hard shadows", tags: ["outdoor", "day"] },
+    { label: "Overcast/soft daylight", value: "diffused daylight with soft ambient light", tags: ["outdoor", "day"] },
+    { label: "Window daylight", value: "soft window light with indoor natural lighting", tags: ["indoor", "day"] },
+    { label: "Curtains/sheers", value: "sunlight filtered through sheer curtains, creating soft diffused window light", tags: ["indoor", "day"] },
+    { label: "Golden hour rays", value: "warm sunbeams, golden hour light, and subtle volumetric glow", tags: ["outdoor", "day"] },
+    { label: "Moonlight/night", value: "cool moonlight with deep night ambience", tags: ["outdoor", "night"] },
+    { label: "Urban night (street/neon)", value: "neon glow, street lamp lighting, and urban night atmosphere", tags: ["outdoor", "night", "urban"] },
+    { label: "Warm flame (candle/fire)", value: "warm candlelight glow and fireplace ambient light", tags: ["indoor", "night"] },
+    { label: "Practical lamps (indoor lamps)", value: "warm practical lamp lighting and interior ambient lights", tags: ["indoor", "night"] }
 ];
 
 const lightingDirectionPresets = [
@@ -1124,6 +1292,8 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
                 randomizeEnabled
                     ? this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random age (or pick one)", agePresets))
                     : this.menu(agePresets.indexOf("30 years old"), agePresets),
+                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random skin tone (or pick one)" : "Choose skin tone", skinTonePresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random eye color (or pick one)" : "Choose eye color", eyeColorPresets))
             ]
         ));
 
@@ -1151,11 +1321,22 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
         addGroupedSections.call(this, fields, sectionTitle(subjectPrefix, "Appearance"), appearanceSwitchGroups);
 
         fields.push(this.section(
+            sectionTitle(subjectPrefix, "Hair", "Hair Type"),
+            randomizeEnabled ? "Pick a hair texture manually, or leave unselected to randomize" : "Hair texture choices",
+            [
+                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hair type (or pick one)" : "No hair type", hairTypePresets)),
+                this.textField("", "Custom hair type (always included)", false, 40)
+            ]
+        ));
+
+        fields.push(this.section(
             sectionTitle(subjectPrefix, "Hair"),
             randomizeEnabled
                 ? "Pick hair color/length manually, or leave unselected to randomize. Custom text is always included."
                 : "Hair color, length, hairstyle, and additional subject details",
             [
+                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hair color (or pick one)" : "No hair color", hairColorPresets)),
+                this.textField("", "Custom hair color (always included)", false, 40),
                 this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hair length (or pick one)" : "No hair length", hairLengthPresets)),
                 this.textField("", "Custom hair length (always included)", false, 40),
                 this.textField("", "Custom hairstyle (always included)", false, 40),
@@ -1396,6 +1577,8 @@ for (let i = 0; i < subjectCount; i++) {
     const age = randomizeEnabled
         ? selectedValueWithPlaceholder(identityData[2], agePresets)
         : selectedValueNoPlaceholder(identityData[2], agePresets);
+    const skin = selectedValueWithPlaceholder(identityData[3], skinTonePresets);
+    const eyeColor = selectedValueWithPlaceholder(identityData[4], eyeColorPresets);
 
     // --- Body / Physique ---
     const bodyData = nextSection();
@@ -1416,9 +1599,18 @@ for (let i = 0; i < subjectCount; i++) {
     // --- Appearance switch groups ---
     const appearanceValues = parseGroupedSwitches(appearanceSwitchGroups);
 
+    // --- Hair Type ---
+    const hairTypeData = nextSection();
+    const pinnedHairType = selectedValueWithPlaceholder(hairTypeData[0], hairTypePresets);
+    const customHairType = typeof hairTypeData[1] === "string" ? hairTypeData[1].trim() : "";
+
     // --- Hair ---
     const hairData = nextSection();
     let hairIdx = 0;
+    const hairColorIndex = hairData[hairIdx++];
+    const customHairColor = typeof hairData[hairIdx++] === "string" ? hairData[hairIdx - 1].trim() : "";
+    const pinnedHairColor = selectedValueWithPlaceholder(hairColorIndex, hairColorPresets);
+
     const hairLengthIndex = hairData[hairIdx++];
     const customHairLength = typeof hairData[hairIdx++] === "string" ? hairData[hairIdx - 1].trim() : "";
     const pinnedHairLength = selectedValueWithPlaceholder(hairLengthIndex, hairLengthPresets);
@@ -1432,11 +1624,13 @@ for (let i = 0; i < subjectCount; i++) {
 
     if (randomizeEnabled) {
         randomSubjectConfig = {
-            celebrity, gender, nationality, age,
+            celebrity, gender, nationality, age, skin, eyeColor,
             pinnedBuild, pinnedHeight, pinnedChest, pinnedHips, pinnedBodyShape,
             pinnedLegs, pinnedAssSize, pinnedBellySize, pinnedSpecificBody,
             pinnedLips, pinnedEyelashes, customBodyDetails,
             appearanceValues,
+            pinnedHairType, customHairType,
+            pinnedHairColor, customHairColor,
             pinnedHairLength, customHairLength,
             customHairstyle, hairstyleValues,
             additionalDetails, accessoryValues
@@ -1452,6 +1646,8 @@ for (let i = 0; i < subjectCount; i++) {
     if (nationality) subjectParts.push(nationality);
     if (gender) subjectParts.push(gender);
     if (age) subjectParts.push(age);
+    if (skin) subjectParts.push("with " + skin);
+    if (eyeColor) subjectParts.push(eyeColor);
     if (celebrity) subjectParts.push(celebrity);
 
     const bodySelections = [
@@ -1477,10 +1673,16 @@ for (let i = 0; i < subjectCount; i++) {
 
     subjectParts.push(...appearanceValues);
 
+    const hairType = customHairType !== "" ? customHairType : pinnedHairType;
+    const hairColor = customHairColor !== "" ? customHairColor : pinnedHairColor;
     const hairLength = customHairLength !== "" ? customHairLength : pinnedHairLength;
     const hairstyle = joinParts([...hairstyleValues, customHairstyle]);
 
-    const hairDescription = joinParts([hairLength, hairstyle]);
+    const hairColorText = hairColor
+        ? (/\bhair\b/i.test(hairColor) ? hairColor : hairColor + " hair")
+        : "";
+
+    const hairDescription = joinParts([hairLength, hairType, hairstyle, hairColorText]);
     if (hairDescription) subjectParts.push(hairDescription);
 
     if (additionalDetails) subjectParts.push(additionalDetails);
@@ -1621,10 +1823,29 @@ function choose(pinned, presets, enabled = true) {
 // Resolve a nationality label for trait-compatibility filtering. Pinned
 // nationalities are stored as full preset values; the random path stores
 // labels. Returns "" when the nationality is unknown.
+function resolveNationalityLabel(nationalityText) {
+    if (!nationalityText) return "";
+    if (NATIONALITY_TRAIT_COMPATIBILITY[nationalityText]) return nationalityText;
+    const hit = nationalityPresets.find(p => getPresetValue(p) === nationalityText);
+    return hit ? getPresetLabel(hit) : "";
+}
+
 // Like choose(), but when no pinned value is given it picks from the
 // nationality-compatible subset for `category` ("eyes" | "hair" |
 // "hairTypes" | "skin") instead of the full preset list. Falls back to the
 // full list when the nationality is unknown or has no entry.
+function chooseCompatible(pinned, presets, nationalityLabel, category, enabled = true) {
+    if (pinned) return pinned;
+    if (!enabled) return "";
+    const entry = nationalityLabel ? NATIONALITY_TRAIT_COMPATIBILITY[nationalityLabel] : null;
+    const subset = entry ? entry[category] : null;
+    if (subset && subset.length) return randomElement(subset);
+    return randomPresetValue(presets);
+}
+
+function hairText(color) {
+    return color && !/\bhair\b/i.test(color) ? `${color} hair` : color;
+}
 function oneRandomStyle() {
     const groups = hairstyleGroups.flatMap(group => group.presets);
     return randomPresetValue(groups);
@@ -1636,13 +1857,15 @@ function buildRandomSubject(cfg) {
     const randomIdentity = !celebrity;
     const gender = cfg.gender || (randomIdentity ? randomPresetValue(genderPresets) : "woman");
     const genderForm = getGenderForm(gender || "woman");
-    // v18: the nationality preset value is a complete concise appearance
-    // description (skin, eyes, hair) -- no separate trait rolls.
     const nationality = cfg.nationality || (randomIdentity
-        ? getPresetValue(randomElement(nationalityPresets)) : "");
+        ? getPresetLabel(randomElement(nationalityPresets)) : "");
     const age = choose(cfg.age, agePresets, randomIdentity);
+    // v15: keep separately-randomized traits compatible with the nationality.
+    const compatNationality = resolveNationalityLabel(nationality);
+    const skin = chooseCompatible(cfg.skin, skinTonePresets, compatNationality, "skin", randomIdentity && !cfg.nationality);
+    const eyes = chooseCompatible(cfg.eyeColor, eyeColorPresets, compatNationality, "eyes", randomIdentity);
     const lead = joinParts([nationality, gender]);
-    const details = [age, celebrity];
+    const details = [age, skin ? `with ${skin}` : "", eyes, celebrity];
     const bodyFields = [
         [cfg.pinnedBuild, overallBuildPresets], [cfg.pinnedHeight, heightPresets],
         [cfg.pinnedChest, chestPresets], [cfg.pinnedHips, hipPresets],
@@ -1657,9 +1880,11 @@ function buildRandomSubject(cfg) {
     if (!celebrity && !cfg.pinnedBuild && !cfg.pinnedBodyShape) details.push(randomPresetValue(overallBuildPresets));
     details.push(cfg.customBodyDetails, ...cfg.appearanceValues);
     const hasPinnedHair = Boolean(cfg.customHairstyle || cfg.hairstyleValues.length);
+    const hairType = chooseCompatible(cfg.customHairType || cfg.pinnedHairType, hairTypePresets, compatNationality, "hairTypes", !celebrity && !hasPinnedHair);
+    const hairColor = chooseCompatible(cfg.customHairColor || cfg.pinnedHairColor, hairColorPresets, compatNationality, "hair", !celebrity);
     const hairLength = choose(cfg.customHairLength || cfg.pinnedHairLength, hairLengthPresets, !celebrity && !hasPinnedHair);
     const style = joinParts([...cfg.hairstyleValues, cfg.customHairstyle || (!celebrity && !hasPinnedHair && !cfg.pinnedHairLength && !cfg.customHairLength ? oneRandomStyle() : "")]);
-    details.push(joinParts([hairLength, style]));
+    details.push(joinParts([hairLength, hairType, style, hairText(hairColor)]));
     details.push(cfg.additionalDetails, ...cfg.accessoryValues);
     const subjectDetails = joinParts(details);
     return {
@@ -1685,46 +1910,38 @@ function buildRandomOutfit(cfg) {
 }
 
 // =========================================
-// v16: ACTION COHERENCE
+// TAG-BASED COMPATIBILITY (cf. Prompt Randomizer v1)
+// Presets carry `tags`; random generation filters dependent categories
+// by tag overlap instead of hardcoded text heuristics.
 // =========================================
-// Positions that already name a location -- stacking a Setting on top would
-// double up locations ("standing in a doorway" + "on an office desk").
-const POSITION_LOCATION_HINTS = /\b(doorway|door frame|bed\b|floor|wall|sofa|couch|desk|table|shower|bath|pool|car\b|carpet)\b/i;
-
-// Indoor-ish setting hints, used to match lighting to the environment
-// ("in a surgical theatre" should not get street-lamp lighting).
-const INDOOR_SETTING_HINTS = /\b(shower|bedroom|kitchen|backseat|car\b|theatre|theater|surgical|office|desk|nightclub|hotel|elevator|library|locker)\b/i;
-const INDOOR_LIGHTING_HINTS = /\b(window|curtain|candle|fireplace|practical lamp|interior)\b/i;
-const OUTDOOR_LIGHTING_HINTS = /\b(sunlight|daylight|sun\b|moonlight|neon|street lamp|urban night|dappled)\b/i;
-
-// Indoor/outdoor context of the most recently built random action's
-// environment. Read when randomizing lighting (see buildRandomAction).
-let lastRandomSettingContext = "";
-
-// True when an arms/legs flavor preset physically fights the base position
-// (e.g. "hands on waist" while "crawling toward the camera").
-function actionFlavorConflicts(positionText, flavorText) {
-    const pos = (positionText || "").toLowerCase();
-    const flav = (flavorText || "").toLowerCase();
-    // Hands/arms are load-bearing in these poses.
-    if (/crawling|hands and knees|on all fours|facedown|elbows/.test(pos) && /hands|arms|elbow/.test(flav)) return true;
-    // Horizontal body vs upright stances.
-    if (/laying|facedown|spread eagle|lying|on \{possessive\} back|on \{possessive\} side/.test(pos)
-        && /standing|on the wall|door frame|knees locked|feet together|feet crossed|shoulders back|leaning forward|bending at waist/.test(flav)) return true;
-    return false;
+// Tags on a preset object; plain-string presets have none.
+function presetTags(preset) {
+    return (preset && typeof preset === "object" && Array.isArray(preset.tags)) ? preset.tags : [];
+}
+function hasPresetTag(preset, tag) {
+    return presetTags(preset).includes(tag);
+}
+// Random preset OBJECT (not just its value), skipping empty values.
+function randomPreset(presets) {
+    const candidates = presets.filter(p => {
+        const value = getPresetValue(p);
+        return value !== undefined && value !== null && value !== "";
+    });
+    return candidates.length > 0 ? randomElement(candidates) : null;
 }
 
-// Random natural-lighting preset compatible with the last built action's
+// Indoor/outdoor environment tags of the most recently built random
+// action. Read when randomizing lighting (see buildRandomAction).
+let lastActionEnvTags = [];
+
+// Random natural-lighting preset whose tags match the last built action's
 // environment. Falls back to the full list when the context is unknown.
 function randomCompatibleNaturalLighting() {
+    const wantIndoor = lastActionEnvTags.includes("indoor");
+    const wantOutdoor = lastActionEnvTags.includes("outdoor");
     const pool = naturalLightingPresets.filter(p => {
-        const v = getPresetValue(p) || "";
-        // Indoor hints win on overlap ("sunlight filtered through sheer
-        // curtains" is indoor window light, not outdoor sunlight).
-        const indoorLight = INDOOR_LIGHTING_HINTS.test(v);
-        const outdoorLight = OUTDOOR_LIGHTING_HINTS.test(v) && !indoorLight;
-        if (lastRandomSettingContext === "indoor") return indoorLight;
-        if (lastRandomSettingContext === "outdoor") return outdoorLight;
+        if (wantIndoor) return hasPresetTag(p, "indoor");
+        if (wantOutdoor) return hasPresetTag(p, "outdoor");
         return true;
     });
     return randomPresetValue(pool.length ? pool : naturalLightingPresets);
@@ -1735,40 +1952,46 @@ function randomCompatibleNaturalLighting() {
 function buildRandomAction(cfg) {
     const fixed = joinParts([cfg.selectedAction, cfg.customAction, ...cfg.actionGroupValues]);
     if (fixed) return fixed;
-    // v16: build a coherent action. One base position (sometimes a detailed
-    // complex pose, which already implies its own setting), an optional
-    // setting (skipped when the position already names a location), and
-    // optional gaze/expression/arms/legs flavor filtered against the
-    // position so pieces don't fight each other. The explicit Sexual
-    // Positions group stays out of random rotation. Records the
-    // environment context in lastRandomSettingContext for lighting.
-    lastRandomSettingContext = "";
+    // Tag-driven compatibility: the position (or a complex pose) is picked
+    // first; a setting is added unless the position carries its own
+    // location; flavor is filtered by pose tags; the environment tags are
+    // remembered for lighting. The explicit Sexual Positions group stays
+    // out of random rotation.
     const groupByTitle = title => actionGroups.find(g => g.title === title);
     const parts = [];
-    let positionText;
-    if (Math.random() < 0.3 && complexActionPresets.length) {
-        positionText = getPresetValue(randomElement(complexActionPresets));
-        lastRandomSettingContext = "indoor"; // complex poses are indoor scenes
-    } else {
-        positionText = randomPresetValue(groupByTitle("Position").presets);
-        if (POSITION_LOCATION_HINTS.test(positionText)) {
-            lastRandomSettingContext = "indoor"; // doorway/bed/floor scenes
-        } else if (Math.random() < 0.7) {
-            const settingText = randomPresetValue(groupByTitle("Setting").presets);
-            parts.push(settingText);
-            lastRandomSettingContext = INDOOR_SETTING_HINTS.test(settingText) ? "indoor" : "outdoor";
+    const positionPreset = (Math.random() < 0.3 && complexActionPresets.length)
+        ? randomPreset(complexActionPresets)
+        : randomPreset(groupByTitle("Position").presets);
+    const positionTags = presetTags(positionPreset);
+    if (positionPreset) parts.push(getPresetValue(positionPreset));
+
+    // Setting, unless the position already names a location.
+    let envTags = [];
+    if (!positionTags.includes("location") && Math.random() < 0.7) {
+        const settingPreset = randomPreset(groupByTitle("Setting").presets);
+        if (settingPreset) {
+            parts.push(getPresetValue(settingPreset));
+            envTags = presetTags(settingPreset);
         }
     }
-    parts.unshift(positionText);
+    if (envTags.length === 0) {
+        envTags = positionTags.filter(tag => tag === "indoor" || tag === "outdoor");
+    }
+    lastActionEnvTags = envTags;
+
+    // Flavor, filtered by pose tags: load-bearing poses skip the Arms
+    // group entirely; horizontal poses skip upright-only flavor.
     if (Math.random() < 0.5) {
         const flavorGroups = ["Gaze", "Expression", "Arms", "Legs"];
-        // Try a few times to find flavor that doesn't fight the position.
+        if (positionTags.includes("handsBusy")) {
+            flavorGroups.splice(flavorGroups.indexOf("Arms"), 1);
+        }
         for (let attempt = 0; attempt < 4; attempt++) {
-            const flavorText = randomPresetValue(groupByTitle(randomElement(flavorGroups)).presets);
-            if (flavorText && !actionFlavorConflicts(positionText, flavorText)) {
-                parts.push(flavorText);
-                break;
-            }
+            const flavorPreset = randomPreset(groupByTitle(randomElement(flavorGroups)).presets);
+            if (!flavorPreset) continue;
+            if (positionTags.includes("floor") && hasPresetTag(flavorPreset, "upright")) continue;
+            parts.push(getPresetValue(flavorPreset));
+            break;
         }
     }
     return joinParts(parts);
@@ -1803,8 +2026,8 @@ if (randomizeEnabled) {
     for (let i = 0; i < randomImageCount; i++) {
         const subject = sameSubject || buildRandomSubject(soloGirlConfig || randomSubjectConfig);
         const aspectOption = randomElement(selectedAspectOptions);
-        // v16: build the action first -- it records its environment context
-        // (lastRandomSettingContext) for compatible lighting below.
+        // Build the action first -- it records its environment tags
+        // (lastActionEnvTags) for compatible lighting below.
         const actionText = buildRandomAction(randomActionConfig);
         finalPrompts.push(makePrompt({
             subject,
