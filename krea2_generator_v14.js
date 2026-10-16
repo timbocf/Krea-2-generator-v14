@@ -1,8 +1,8 @@
 //@api-1.0
-// version 15
+// version 16
 // =========================================
 // KREA 2 MODULAR BATCH GENERATOR
-// Version 15 — Solo Girl Batch mode + nationality trait compatibility
+// Version 16 — Coherent action/setting/lighting combos
 // =========================================
 
 // =========================================
@@ -1918,28 +1918,92 @@ function buildRandomOutfit(cfg) {
     return randomPresetValue(group.presets);
 }
 
+// =========================================
+// v16: ACTION COHERENCE
+// =========================================
+// Positions that already name a location -- stacking a Setting on top would
+// double up locations ("standing in a doorway" + "on an office desk").
+const POSITION_LOCATION_HINTS = /\b(doorway|door frame|bed\b|floor|wall|sofa|couch|desk|table|shower|bath|pool|car\b|carpet)\b/i;
+
+// Indoor-ish setting hints, used to match lighting to the environment
+// ("in a surgical theatre" should not get street-lamp lighting).
+const INDOOR_SETTING_HINTS = /\b(shower|bedroom|kitchen|backseat|car\b|theatre|theater|surgical|office|desk|nightclub|hotel|elevator|library|locker)\b/i;
+const INDOOR_LIGHTING_HINTS = /\b(window|curtain|candle|fireplace|practical lamp|interior)\b/i;
+const OUTDOOR_LIGHTING_HINTS = /\b(sunlight|daylight|sun\b|moonlight|neon|street lamp|urban night|dappled)\b/i;
+
+// Indoor/outdoor context of the most recently built random action's
+// environment. Read when randomizing lighting (see buildRandomAction).
+let lastRandomSettingContext = "";
+
+// True when an arms/legs flavor preset physically fights the base position
+// (e.g. "hands on waist" while "crawling toward the camera").
+function actionFlavorConflicts(positionText, flavorText) {
+    const pos = (positionText || "").toLowerCase();
+    const flav = (flavorText || "").toLowerCase();
+    // Hands/arms are load-bearing in these poses.
+    if (/crawling|hands and knees|on all fours|facedown|elbows/.test(pos) && /hands|arms|elbow/.test(flav)) return true;
+    // Horizontal body vs upright stances.
+    if (/laying|facedown|spread eagle|lying|on \{possessive\} back|on \{possessive\} side/.test(pos)
+        && /standing|on the wall|door frame|knees locked|feet together|feet crossed|shoulders back|leaning forward|bending at waist/.test(flav)) return true;
+    return false;
+}
+
+// Random natural-lighting preset compatible with the last built action's
+// environment. Falls back to the full list when the context is unknown.
+function randomCompatibleNaturalLighting() {
+    const pool = naturalLightingPresets.filter(p => {
+        const v = getPresetValue(p) || "";
+        // Indoor hints win on overlap ("sunlight filtered through sheer
+        // curtains" is indoor window light, not outdoor sunlight).
+        const indoorLight = INDOOR_LIGHTING_HINTS.test(v);
+        const outdoorLight = OUTDOOR_LIGHTING_HINTS.test(v) && !indoorLight;
+        if (lastRandomSettingContext === "indoor") return indoorLight;
+        if (lastRandomSettingContext === "outdoor") return outdoorLight;
+        return true;
+    });
+    return randomPresetValue(pool.length ? pool : naturalLightingPresets);
+}
+
 // Never randomly select the explicit Sexual Positions menu or pile
 // several mutually exclusive base positions into a single prompt.
 function buildRandomAction(cfg) {
     const fixed = joinParts([cfg.selectedAction, cfg.customAction, ...cfg.actionGroupValues]);
     if (fixed) return fixed;
-    // v15: randomize from the full action groups instead of a tiny hardcoded
-    // list. One base position (sometimes a detailed complex pose, which
-    // already implies its own setting), usually a setting/environment, and
-    // sometimes gaze/expression/arms/legs flavor. The explicit Sexual
-    // Positions group stays out of random rotation.
+    // v16: build a coherent action. One base position (sometimes a detailed
+    // complex pose, which already implies its own setting), an optional
+    // setting (skipped when the position already names a location), and
+    // optional gaze/expression/arms/legs flavor filtered against the
+    // position so pieces don't fight each other. The explicit Sexual
+    // Positions group stays out of random rotation. Records the
+    // environment context in lastRandomSettingContext for lighting.
+    lastRandomSettingContext = "";
     const groupByTitle = title => actionGroups.find(g => g.title === title);
     const parts = [];
+    let positionText;
     if (Math.random() < 0.3 && complexActionPresets.length) {
-        parts.push(getPresetValue(randomElement(complexActionPresets)));
+        positionText = getPresetValue(randomElement(complexActionPresets));
+        lastRandomSettingContext = "indoor"; // complex poses are indoor scenes
     } else {
-        parts.push(randomPresetValue(groupByTitle("Position").presets));
-        if (Math.random() < 0.7) {
-            parts.push(randomPresetValue(groupByTitle("Setting").presets));
+        positionText = randomPresetValue(groupByTitle("Position").presets);
+        if (POSITION_LOCATION_HINTS.test(positionText)) {
+            lastRandomSettingContext = "indoor"; // doorway/bed/floor scenes
+        } else if (Math.random() < 0.7) {
+            const settingText = randomPresetValue(groupByTitle("Setting").presets);
+            parts.push(settingText);
+            lastRandomSettingContext = INDOOR_SETTING_HINTS.test(settingText) ? "indoor" : "outdoor";
         }
     }
+    parts.unshift(positionText);
     if (Math.random() < 0.5) {
-        parts.push(randomPresetValue(groupByTitle(randomElement(["Gaze", "Expression", "Arms", "Legs"])).presets));
+        const flavorGroups = ["Gaze", "Expression", "Arms", "Legs"];
+        // Try a few times to find flavor that doesn't fight the position.
+        for (let attempt = 0; attempt < 4; attempt++) {
+            const flavorText = randomPresetValue(groupByTitle(randomElement(flavorGroups)).presets);
+            if (flavorText && !actionFlavorConflicts(positionText, flavorText)) {
+                parts.push(flavorText);
+                break;
+            }
+        }
     }
     return joinParts(parts);
 }
@@ -1973,15 +2037,18 @@ if (randomizeEnabled) {
     for (let i = 0; i < randomImageCount; i++) {
         const subject = sameSubject || buildRandomSubject(soloGirlConfig || randomSubjectConfig);
         const aspectOption = randomElement(selectedAspectOptions);
+        // v16: build the action first -- it records its environment context
+        // (lastRandomSettingContext) for compatible lighting below.
+        const actionText = buildRandomAction(randomActionConfig);
         finalPrompts.push(makePrompt({
             subject,
             outfit: buildRandomOutfit(randomOutfitConfig),
-            action: buildRandomAction(randomActionConfig),
+            action: actionText,
             camera: cameraChoices.length ? randomElement(cameraChoices) : randomPresetValue(cameraOptionsPresets),
             artStyle: artStyles.length ? randomElement(artStyles) : randomPresetValue(artStylePresets),
             timeOfDay: timeOfDay || randomPresetValue(timeOfDayPresets),
             lighting: joinParts([
-                naturalLighting || randomPresetValue(naturalLightingPresets),
+                naturalLighting || randomCompatibleNaturalLighting(),
                 lightingDirection || randomPresetValue(lightingDirectionPresets),
                 lightingStyle || randomPresetValue(lightingStylePresets)
             ])
