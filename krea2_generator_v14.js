@@ -1,8 +1,8 @@
 //@api-1.0
-// version 16
+// version 17
 // =========================================
 // KREA 2 MODULAR BATCH GENERATOR
-// Version 16 — Coherent action/setting/lighting combos
+// Version 17 — Trimmed weird subject options
 // =========================================
 
 // =========================================
@@ -396,19 +396,11 @@ const makeupPresets = [
     "light makeup", "heavy makeup", "red lipstick", "smokey eyes", "heavy mascara",
     { label: "Lined lips (Chola/Chicana style)", value: "lips lined with a dark brown lip liner a shade darker than the lipstick, filled in with lighter lipstick" }
 ];
-const makeupOdditiesPresets = [
-    "full clown makeup", "edgy sexy clown makeup with streams of blood from {possessive} mouth and dark eyes",
-    "porcelain doll makeup with rosy cheeks and a painted-on smile", "geisha-style white face makeup with red lips",
-    "sugar skull Dia de los Muertos face paint", "zombie/horror makeup with pale skin and dark sunken eyes",
-    "mime makeup with white face and black accents", "glitter rave face paint", "tribal face paint"
-];
 const facialHairPresets = ["short beard", "thick beard"];
 const tattooPresets = ["arm tattoo", "back tattoo", "neck tattoos", "sleeve tattoos", "red & green rose tattoos that cover both arms"];
 const bodyHairPresets = [
     "light body hair", "thick body hair", "light pubic hair", "thick pubic hair", "a full bush of thick pubic hair",
     "freckles", "dimples", "wrinkles", "sun-kissed tan lines", "sweaty skin",
-    "prosthetic small horns", "pointed elf ears", "vampire fangs", "fake stitched scars",
-    "metallic/chrome body paint", "bioluminescent-style glowing paint accents",
     "subtle natural stretch marks", "cellulite texture", "visible veins", "beauty mark"
 ];
 
@@ -429,7 +421,6 @@ const nosePresets = [
 
 const appearanceSwitchGroups = [
     { title: "Makeup", description: "Makeup and cosmetic styling", presets: makeupPresets },
-    { title: "Makeup Oddities", description: "Unconventional and costume-style makeup looks", presets: makeupOdditiesPresets },
     { title: "Facial Hair", description: "Facial hair characteristics", presets: facialHairPresets },
     { title: "Nose", description: "Nose bridge, tip, and nostril characteristics (multiple can combine)", presets: nosePresets },
     { title: "Tattoos", description: "Visible tattoo characteristics", presets: tattooPresets },
