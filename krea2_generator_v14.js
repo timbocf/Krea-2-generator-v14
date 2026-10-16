@@ -1923,8 +1923,25 @@ function buildRandomOutfit(cfg) {
 function buildRandomAction(cfg) {
     const fixed = joinParts([cfg.selectedAction, cfg.customAction, ...cfg.actionGroupValues]);
     if (fixed) return fixed;
-    const simple = ["standing", "sitting", "walking", "leaning against a wall", "smiling at the camera", "looking out a window", "relaxing on a sofa"];
-    return randomElement(simple);
+    // v15: randomize from the full action groups instead of a tiny hardcoded
+    // list. One base position (sometimes a detailed complex pose, which
+    // already implies its own setting), usually a setting/environment, and
+    // sometimes gaze/expression/arms/legs flavor. The explicit Sexual
+    // Positions group stays out of random rotation.
+    const groupByTitle = title => actionGroups.find(g => g.title === title);
+    const parts = [];
+    if (Math.random() < 0.3 && complexActionPresets.length) {
+        parts.push(getPresetValue(randomElement(complexActionPresets)));
+    } else {
+        parts.push(randomPresetValue(groupByTitle("Position").presets));
+        if (Math.random() < 0.7) {
+            parts.push(randomPresetValue(groupByTitle("Setting").presets));
+        }
+    }
+    if (Math.random() < 0.5) {
+        parts.push(randomPresetValue(groupByTitle(randomElement(["Gaze", "Expression", "Arms", "Legs"])).presets));
+    }
+    return joinParts(parts);
 }
 
 function makePrompt(data, aspectOption) {
