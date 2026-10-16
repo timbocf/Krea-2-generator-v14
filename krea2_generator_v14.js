@@ -1,8 +1,8 @@
 //@api-1.0
-// version 17
+// version 18
 // =========================================
 // KREA 2 MODULAR BATCH GENERATOR
-// Version 17 — Trimmed weird subject options
+// Version 18 — Heritage descriptions replace trait menus
 // =========================================
 
 // =========================================
@@ -88,175 +88,30 @@ const genderPresets = ["woman", "man"];
 
 // --- NATIONALITY / ETHNICITY ---
 const nationalityPresets = [
-    { label: "Caucasian", value: "Caucasian with Western European facial features" },
-    { label: "Black", value: "Black with rich deep skin tone and classic African facial features" },
-    { label: "Mixed-Race", value: "Mixed-race with a natural blend of African and European facial features, deep golden-bronze skin, softly flared nostrils, a straight natural nose bridge, high defined cheekbones, thick naturally arched eyebrows, dark brown eyes, thick dark brown hair with thick wavy curls, a curvy hourglass figure, and a round ass" },
-    { label: "Mexican", value: "Mexican with prominent Indigenous Mesoamerican facial features, warm olive-tan skin, dark brown eyes, thick dark eyebrows, thick dark wavy hair, plump lips, and a curvy hourglass figure" },
-    { label: "Indian", value: "Indian with warm brown skin, dark eyes, and South Asian facial features" },
-    { label: "Thai", value: "Thai with golden-tan skin and Southeast Asian facial features" },
-    { label: "Japanese", value: "Japanese with fair skin and East Asian facial features" },
-    { label: "Korean", value: "Korean with fair porcelain skin and East Asian facial features" },
-    { label: "Filipina", value: "Filipina with warm tan skin and Southeast Asian facial features" },
-    { label: "Brazilian", value: "Brazilian with sun-kissed olive skin and a blend of European, African, and Indigenous features" },
-    { label: "Italian", value: "Italian with olive skin and Mediterranean facial features" },
-    { label: "Scandinavian", value: "Scandinavian with fair skin, light hair, and Nordic facial features" },
-    { label: "Russian/Eastern European", value: "Russian/Eastern European with fair skin and Slavic facial features" },
-    { label: "Chinese", value: "Chinese with fair skin and East Asian facial features" },
-    { label: "Vietnamese", value: "Vietnamese with warm tan skin and Southeast Asian facial features" },
-    { label: "Middle Eastern", value: "Middle Eastern with olive skin, dark hair, and Middle Eastern facial features" },
-    { label: "French", value: "French with fair skin and classic Western European features" },
-    { label: "German", value: "German with fair skin and Central European facial features" },
-    { label: "Irish", value: "Irish with fair skin, freckles, and Celtic facial features" },
-    { label: "Native American", value: "Native American with warm bronze skin and Indigenous American facial features" },
-    { label: "Polynesian/Pacific Islander", value: "Polynesian/Pacific Islander with warm brown skin and Polynesian facial features" },
-    { label: "Ethiopian/East African", value: "Ethiopian/East African with deep brown skin and East African facial features" }
+    { label: "Caucasian", value: "Caucasian with fair skin, soft Western European facial features, hazel eyes, and straight dark blonde hair" },
+    { label: "Black", value: "Black with rich deep brown skin, classic African facial features, dark brown eyes, and short coily black hair" },
+    { label: "Mixed-Race", value: "Mixed-race with golden-bronze skin, blended African and European features, dark brown eyes, and voluminous dark curls" },
+    { label: "Mexican", value: "Mexican with warm olive-tan skin, Indigenous Mesoamerican facial features, dark brown eyes, and thick dark wavy hair" },
+    { label: "Indian", value: "Indian with warm brown skin, South Asian facial features, dark brown eyes, and long thick black hair" },
+    { label: "Thai", value: "Thai with golden-tan skin, Southeast Asian facial features, dark almond-shaped eyes, and straight black hair" },
+    { label: "Japanese", value: "Japanese with fair skin, East Asian facial features, dark brown almond-shaped eyes, and straight black hair" },
+    { label: "Korean", value: "Korean with fair porcelain skin, East Asian facial features, dark almond eyes, and sleek straight black hair" },
+    { label: "Filipina", value: "Filipina with warm tan skin, Southeast Asian facial features, dark brown eyes, and long dark wavy hair" },
+    { label: "Brazilian", value: "Brazilian with sun-kissed olive skin, blended European, African and Indigenous features, brown eyes, and wavy dark hair" },
+    { label: "Italian", value: "Italian with warm olive skin, Mediterranean facial features, dark brown eyes, and thick dark wavy hair" },
+    { label: "Scandinavian", value: "Scandinavian with fair skin, Nordic facial features, blue eyes, and straight blonde hair" },
+    { label: "Russian/Eastern European", value: "Russian with fair skin, Slavic facial features, light grey eyes, and straight light brown hair" },
+    { label: "Chinese", value: "Chinese with fair skin, East Asian facial features, dark almond-shaped eyes, and straight black hair" },
+    { label: "Vietnamese", value: "Vietnamese with warm tan skin, Southeast Asian facial features, dark almond eyes, and long straight black hair" },
+    { label: "Middle Eastern", value: "Middle Eastern with olive skin, striking dark eyes, defined eyebrows, and thick dark wavy hair" },
+    { label: "French", value: "French with fair skin, classic Western European features, light brown eyes, and dark brown hair" },
+    { label: "German", value: "German with fair skin, Central European facial features, blue-grey eyes, and straight blonde hair" },
+    { label: "Irish", value: "Irish with fair freckled skin, Celtic facial features, green eyes, and wavy red hair" },
+    { label: "Native American", value: "Native American with warm bronze skin, Indigenous American facial features, dark brown eyes, and long straight black hair" },
+    { label: "Polynesian/Pacific Islander", value: "Polynesian with warm brown skin, Polynesian facial features, dark brown eyes, and thick dark wavy hair" },
+    { label: "Ethiopian/East African", value: "Ethiopian with deep brown skin, East African facial features, dark expressive eyes, and short coily black hair" }
 ];
 
-
-// =========================================
-// NATIONALITY TRAIT COMPATIBILITY (v15)
-// =========================================
-// Maps each nationality preset LABEL to the eye colors, hair colors, hair
-// types and skin tones that are plausible for it. Used by
-// chooseCompatible() so separately-randomized traits never clash with the
-// subject's nationality (e.g. no blue eyes + platinum hair on a Japanese
-// subject). Values must match the preset *values* in eyeColorPresets,
-// hairColorPresets, hairTypePresets and skinTonePresets. Pinned/user-picked
-// values always win over this map.
-const NATIONALITY_TRAIT_COMPATIBILITY = {
-    "Caucasian": {
-        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "dark brown eyes", "amber eyes", "gray eyes"],
-        hair: ["blonde", "brunette", "black", "red", "auburn", "platinum blonde", "chestnut brown", "copper/ginger"],
-        hairTypes: ["straight", "wavy", "curly", "frizzy"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin", "tanned sun-kissed skin", "olive skin"]
-    },
-    "Black": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "amber eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["kinky", "afro-textured", "curly", "wavy"],
-        skin: ["warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen", "caramel skin"]
-    },
-    "Mixed-Race": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "amber eyes", "green eyes"],
-        hair: ["black", "brunette", "chestnut brown"],
-        hairTypes: ["curly", "wavy", "kinky", "afro-textured", "straight"],
-        skin: ["golden-bronze skin", "caramel skin", "warm brown skin", "tanned sun-kissed skin", "olive skin"]
-    },
-    "Mexican": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
-        hair: ["black", "brunette", "chestnut brown"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["olive skin", "caramel skin", "golden-bronze skin", "warm brown skin", "tanned sun-kissed skin"]
-    },
-    "Indian": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["warm brown skin", "caramel skin", "golden-bronze skin", "olive skin"]
-    },
-    "Thai": {
-        eyes: ["brown eyes", "dark brown eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["golden-bronze skin", "caramel skin", "tanned sun-kissed skin", "warm brown skin"]
-    },
-    "Japanese": {
-        eyes: ["brown eyes", "dark brown eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
-    },
-    "Korean": {
-        eyes: ["brown eyes", "dark brown eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
-    },
-    "Filipina": {
-        eyes: ["brown eyes", "dark brown eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "tanned sun-kissed skin"]
-    },
-    "Brazilian": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes", "amber eyes"],
-        hair: ["black", "brunette", "chestnut brown", "blonde", "auburn"],
-        hairTypes: ["straight", "wavy", "curly", "frizzy"],
-        skin: ["olive skin", "tanned sun-kissed skin", "caramel skin", "golden-bronze skin", "warm brown skin"]
-    },
-    "Italian": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes"],
-        hair: ["black", "brunette", "chestnut brown", "auburn"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["olive skin", "tanned sun-kissed skin", "fair skin", "cream skin"]
-    },
-    "Scandinavian": {
-        eyes: ["blue eyes", "green eyes", "gray eyes", "hazel eyes"],
-        hair: ["blonde", "platinum blonde", "brunette", "red"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
-    },
-    "Russian/Eastern European": {
-        eyes: ["blue eyes", "green eyes", "gray eyes", "hazel eyes", "brown eyes"],
-        hair: ["blonde", "platinum blonde", "brunette", "chestnut brown", "red", "auburn"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
-    },
-    "Chinese": {
-        eyes: ["brown eyes", "dark brown eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
-    },
-    "Vietnamese": {
-        eyes: ["brown eyes", "dark brown eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["fair skin", "cream skin", "tanned sun-kissed skin", "golden-bronze skin"]
-    },
-    "Middle Eastern": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes", "green eyes", "amber eyes"],
-        hair: ["black", "brunette", "chestnut brown", "auburn"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["olive skin", "caramel skin", "tanned sun-kissed skin", "warm brown skin", "fair skin"]
-    },
-    "French": {
-        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "gray eyes"],
-        hair: ["blonde", "brunette", "chestnut brown", "black", "red", "auburn"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin", "olive skin"]
-    },
-    "German": {
-        eyes: ["blue eyes", "green eyes", "hazel eyes", "brown eyes", "gray eyes"],
-        hair: ["blonde", "platinum blonde", "brunette", "chestnut brown", "red"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
-    },
-    "Irish": {
-        eyes: ["blue eyes", "green eyes", "hazel eyes", "gray eyes", "brown eyes"],
-        hair: ["red", "copper/ginger", "auburn", "blonde", "brunette", "chestnut brown"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["porcelain skin", "pale skin", "fair skin", "cream skin"]
-    },
-    "Native American": {
-        eyes: ["brown eyes", "dark brown eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["straight", "wavy"],
-        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "olive skin"]
-    },
-    "Polynesian/Pacific Islander": {
-        eyes: ["brown eyes", "dark brown eyes", "hazel eyes"],
-        hair: ["black", "brunette", "chestnut brown"],
-        hairTypes: ["straight", "wavy", "curly"],
-        skin: ["caramel skin", "golden-bronze skin", "warm brown skin", "dark skin"]
-    },
-    "Ethiopian/East African": {
-        eyes: ["brown eyes", "dark brown eyes", "amber eyes"],
-        hair: ["black", "brunette"],
-        hairTypes: ["kinky", "afro-textured", "curly", "wavy"],
-        skin: ["warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen"]
-    }
-};
 
 const celebrityPresets = [
     { label: "My Baby", value: "curvy apple-shaped 35-year-old woman with large shapeless drooping breasts, a round ass, long curly 3a black hair, arms covered in red & green rose tattoos, hazel eyes" },
@@ -283,24 +138,7 @@ const agePresets = [
 ];
 
 // --- SKIN TONE ---
-const skinTonePresets = [
-    "porcelain skin", "pale skin", "fair skin", { label: "tanned skin", value: "tanned sun-kissed skin" }, "cream skin",
-    "olive skin", "caramel skin", "golden-bronze skin", "warm brown skin", "dark skin", "dark glossy skin", "dark black nubian skin with a glossy sheen"
-];
-
 // --- EYE COLOR ---
-const eyeColorPresets = [
-    { label: "Blue", value: "blue eyes" },
-    { label: "Green", value: "green eyes" },
-    { label: "Hazel", value: "hazel eyes" },
-    { label: "Brown", value: "brown eyes" },
-    { label: "Dark brown", value: "dark brown eyes" },
-    { label: "Amber", value: "amber eyes" },
-    { label: "Gray", value: "gray eyes" },
-    { label: "Violet", value: "violet eyes" },
-    { label: "Heterochromia (blue/brown)", value: "eyes that have heterochromia, one eye blue, the other eye brown" }
-];
-
 // =========================================
 // BODY / PHYSIQUE
 // =========================================
@@ -429,13 +267,7 @@ const appearanceSwitchGroups = [
     { title: "Hair Details", description: "Additional hair-shaving and hair-structure details", presets: hairDetailPresets }
 ];
 
-const hairColorPresets = [
-    "blonde", "brunette", "black", "red", "auburn", "salt & pepper", "brown salt & pepper", "silver",
-    "platinum blonde", "copper/ginger", "chestnut brown", "ombre", "balayage", "pastel pink", "pastel blue/purple"
-];
 const hairLengthPresets = ["short", "medium-length", "long", "very long"];
-const hairTypePresets = ["straight", "wavy", "curly", "kinky", "afro-textured", "frizzy"];
-
 const hairstyleGroups = [
     {
         title: "Updos and braided styles",
@@ -1292,8 +1124,6 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
                 randomizeEnabled
                     ? this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random age (or pick one)", agePresets))
                     : this.menu(agePresets.indexOf("30 years old"), agePresets),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random skin tone (or pick one)" : "Choose skin tone", skinTonePresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random eye color (or pick one)" : "Choose eye color", eyeColorPresets))
             ]
         ));
 
@@ -1321,22 +1151,11 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
         addGroupedSections.call(this, fields, sectionTitle(subjectPrefix, "Appearance"), appearanceSwitchGroups);
 
         fields.push(this.section(
-            sectionTitle(subjectPrefix, "Hair", "Hair Type"),
-            randomizeEnabled ? "Pick a hair texture manually, or leave unselected to randomize" : "Hair texture choices",
-            [
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hair type (or pick one)" : "No hair type", hairTypePresets)),
-                this.textField("", "Custom hair type (always included)", false, 40)
-            ]
-        ));
-
-        fields.push(this.section(
             sectionTitle(subjectPrefix, "Hair"),
             randomizeEnabled
                 ? "Pick hair color/length manually, or leave unselected to randomize. Custom text is always included."
                 : "Hair color, length, hairstyle, and additional subject details",
             [
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hair color (or pick one)" : "No hair color", hairColorPresets)),
-                this.textField("", "Custom hair color (always included)", false, 40),
                 this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hair length (or pick one)" : "No hair length", hairLengthPresets)),
                 this.textField("", "Custom hair length (always included)", false, 40),
                 this.textField("", "Custom hairstyle (always included)", false, 40),
@@ -1577,8 +1396,6 @@ for (let i = 0; i < subjectCount; i++) {
     const age = randomizeEnabled
         ? selectedValueWithPlaceholder(identityData[2], agePresets)
         : selectedValueNoPlaceholder(identityData[2], agePresets);
-    const skin = selectedValueWithPlaceholder(identityData[3], skinTonePresets);
-    const eyeColor = selectedValueWithPlaceholder(identityData[4], eyeColorPresets);
 
     // --- Body / Physique ---
     const bodyData = nextSection();
@@ -1599,18 +1416,9 @@ for (let i = 0; i < subjectCount; i++) {
     // --- Appearance switch groups ---
     const appearanceValues = parseGroupedSwitches(appearanceSwitchGroups);
 
-    // --- Hair Type ---
-    const hairTypeData = nextSection();
-    const pinnedHairType = selectedValueWithPlaceholder(hairTypeData[0], hairTypePresets);
-    const customHairType = typeof hairTypeData[1] === "string" ? hairTypeData[1].trim() : "";
-
     // --- Hair ---
     const hairData = nextSection();
     let hairIdx = 0;
-    const hairColorIndex = hairData[hairIdx++];
-    const customHairColor = typeof hairData[hairIdx++] === "string" ? hairData[hairIdx - 1].trim() : "";
-    const pinnedHairColor = selectedValueWithPlaceholder(hairColorIndex, hairColorPresets);
-
     const hairLengthIndex = hairData[hairIdx++];
     const customHairLength = typeof hairData[hairIdx++] === "string" ? hairData[hairIdx - 1].trim() : "";
     const pinnedHairLength = selectedValueWithPlaceholder(hairLengthIndex, hairLengthPresets);
@@ -1624,13 +1432,11 @@ for (let i = 0; i < subjectCount; i++) {
 
     if (randomizeEnabled) {
         randomSubjectConfig = {
-            celebrity, gender, nationality, age, skin, eyeColor,
+            celebrity, gender, nationality, age,
             pinnedBuild, pinnedHeight, pinnedChest, pinnedHips, pinnedBodyShape,
             pinnedLegs, pinnedAssSize, pinnedBellySize, pinnedSpecificBody,
             pinnedLips, pinnedEyelashes, customBodyDetails,
             appearanceValues,
-            pinnedHairType, customHairType,
-            pinnedHairColor, customHairColor,
             pinnedHairLength, customHairLength,
             customHairstyle, hairstyleValues,
             additionalDetails, accessoryValues
@@ -1646,8 +1452,6 @@ for (let i = 0; i < subjectCount; i++) {
     if (nationality) subjectParts.push(nationality);
     if (gender) subjectParts.push(gender);
     if (age) subjectParts.push(age);
-    if (skin) subjectParts.push("with " + skin);
-    if (eyeColor) subjectParts.push(eyeColor);
     if (celebrity) subjectParts.push(celebrity);
 
     const bodySelections = [
@@ -1673,16 +1477,10 @@ for (let i = 0; i < subjectCount; i++) {
 
     subjectParts.push(...appearanceValues);
 
-    const hairType = customHairType !== "" ? customHairType : pinnedHairType;
-    const hairColor = customHairColor !== "" ? customHairColor : pinnedHairColor;
     const hairLength = customHairLength !== "" ? customHairLength : pinnedHairLength;
     const hairstyle = joinParts([...hairstyleValues, customHairstyle]);
 
-    const hairColorText = hairColor
-        ? (/\bhair\b/i.test(hairColor) ? hairColor : hairColor + " hair")
-        : "";
-
-    const hairDescription = joinParts([hairLength, hairType, hairstyle, hairColorText]);
+    const hairDescription = joinParts([hairLength, hairstyle]);
     if (hairDescription) subjectParts.push(hairDescription);
 
     if (additionalDetails) subjectParts.push(additionalDetails);
@@ -1823,29 +1621,10 @@ function choose(pinned, presets, enabled = true) {
 // Resolve a nationality label for trait-compatibility filtering. Pinned
 // nationalities are stored as full preset values; the random path stores
 // labels. Returns "" when the nationality is unknown.
-function resolveNationalityLabel(nationalityText) {
-    if (!nationalityText) return "";
-    if (NATIONALITY_TRAIT_COMPATIBILITY[nationalityText]) return nationalityText;
-    const hit = nationalityPresets.find(p => getPresetValue(p) === nationalityText);
-    return hit ? getPresetLabel(hit) : "";
-}
-
 // Like choose(), but when no pinned value is given it picks from the
 // nationality-compatible subset for `category` ("eyes" | "hair" |
 // "hairTypes" | "skin") instead of the full preset list. Falls back to the
 // full list when the nationality is unknown or has no entry.
-function chooseCompatible(pinned, presets, nationalityLabel, category, enabled = true) {
-    if (pinned) return pinned;
-    if (!enabled) return "";
-    const entry = nationalityLabel ? NATIONALITY_TRAIT_COMPATIBILITY[nationalityLabel] : null;
-    const subset = entry ? entry[category] : null;
-    if (subset && subset.length) return randomElement(subset);
-    return randomPresetValue(presets);
-}
-
-function hairText(color) {
-    return color && !/\bhair\b/i.test(color) ? `${color} hair` : color;
-}
 function oneRandomStyle() {
     const groups = hairstyleGroups.flatMap(group => group.presets);
     return randomPresetValue(groups);
@@ -1857,15 +1636,13 @@ function buildRandomSubject(cfg) {
     const randomIdentity = !celebrity;
     const gender = cfg.gender || (randomIdentity ? randomPresetValue(genderPresets) : "woman");
     const genderForm = getGenderForm(gender || "woman");
+    // v18: the nationality preset value is a complete concise appearance
+    // description (skin, eyes, hair) -- no separate trait rolls.
     const nationality = cfg.nationality || (randomIdentity
-        ? getPresetLabel(randomElement(nationalityPresets)) : "");
+        ? getPresetValue(randomElement(nationalityPresets)) : "");
     const age = choose(cfg.age, agePresets, randomIdentity);
-    // v15: keep separately-randomized traits compatible with the nationality.
-    const compatNationality = resolveNationalityLabel(nationality);
-    const skin = chooseCompatible(cfg.skin, skinTonePresets, compatNationality, "skin", randomIdentity && !cfg.nationality);
-    const eyes = chooseCompatible(cfg.eyeColor, eyeColorPresets, compatNationality, "eyes", randomIdentity);
     const lead = joinParts([nationality, gender]);
-    const details = [age, skin ? `with ${skin}` : "", eyes, celebrity];
+    const details = [age, celebrity];
     const bodyFields = [
         [cfg.pinnedBuild, overallBuildPresets], [cfg.pinnedHeight, heightPresets],
         [cfg.pinnedChest, chestPresets], [cfg.pinnedHips, hipPresets],
@@ -1880,11 +1657,9 @@ function buildRandomSubject(cfg) {
     if (!celebrity && !cfg.pinnedBuild && !cfg.pinnedBodyShape) details.push(randomPresetValue(overallBuildPresets));
     details.push(cfg.customBodyDetails, ...cfg.appearanceValues);
     const hasPinnedHair = Boolean(cfg.customHairstyle || cfg.hairstyleValues.length);
-    const hairType = chooseCompatible(cfg.customHairType || cfg.pinnedHairType, hairTypePresets, compatNationality, "hairTypes", !celebrity && !hasPinnedHair);
-    const hairColor = chooseCompatible(cfg.customHairColor || cfg.pinnedHairColor, hairColorPresets, compatNationality, "hair", !celebrity);
     const hairLength = choose(cfg.customHairLength || cfg.pinnedHairLength, hairLengthPresets, !celebrity && !hasPinnedHair);
     const style = joinParts([...cfg.hairstyleValues, cfg.customHairstyle || (!celebrity && !hasPinnedHair && !cfg.pinnedHairLength && !cfg.customHairLength ? oneRandomStyle() : "")]);
-    details.push(joinParts([hairLength, hairType, style, hairText(hairColor)]));
+    details.push(joinParts([hairLength, style]));
     details.push(cfg.additionalDetails, ...cfg.accessoryValues);
     const subjectDetails = joinParts(details);
     return {
