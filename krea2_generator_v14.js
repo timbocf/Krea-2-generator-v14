@@ -822,33 +822,19 @@ const artStylePresets = [
 // =========================================
 
 const cameraFramingPresets = [
-    { label: "Head and shoulders", value: "head-and-shoulders framing" },
     { label: "Close-up", value: "close-up framing focused tightly on the subject" },
-    { label: "Extreme close-up", value: "extreme close-up framing focused very tightly on specific facial or bodily details" },
-    { label: "Chest-up", value: "chest-up framing" },
     { label: "Waist-up", value: "waist-up framing" },
-    { label: "3/4 body", value: "three-quarter body framing" },
     { label: "Full body", value: "full-body framing with the entire subject visible" },
-    { label: "Wide shot", value: "wide shot showing the subject and surrounding environment" },
-    { label: "Environmental", value: "environmental portrait framing with the subject integrated into the surrounding scene" }
+    { label: "Wide shot", value: "wide shot showing the subject and surrounding environment" }
 ];
 
 const cameraPerspectivePresets = [
     { label: "Candid", value: "candid" },
     { label: "Eye level", value: "natural eye-level perspective" },
-    { label: "POV", value: "POV" },
     { label: "Low angle", value: "low-angle perspective looking upward toward the subject" },
     { label: "High angle", value: "high-angle perspective looking downward toward the subject" },
-    { label: "Worm's-eye", value: "extreme low-angle worm's-eye perspective" },
-    { label: "Bird's-eye", value: "high bird's-eye perspective looking down from above" },
     { label: "Side view", value: "side-view camera perspective" },
-    { label: "3/4 view", value: "three-quarter camera perspective showing the subject from an oblique angle" },
-    { label: "Wide-angle perspective", value: "pronounced wide-angle perspective with natural spatial exaggeration" },
-    { label: "Compressed perspective", value: "compressed telephoto-style perspective with reduced apparent depth" },
-    { label: "Over-the-Shoulder", value: "over-the-shoulder" },
-    { label: "Dutch angle", value: "tilted dutch-angle perspective" },
-    { label: "Drone/aerial shot", value: "aerial drone shot looking down from a significant height" },
-    { label: "Overhead flat-lay", value: "directly overhead flat-lay perspective" }
+    { label: "POV", value: "POV" }
 ];
 
 const depthOfFieldPresets = [
@@ -860,14 +846,8 @@ const depthOfFieldPresets = [
 
 const cameraCompositionPresets = [
     { label: "Centered", value: "centered composition" },
-    { label: "Rule of thirds", value: "rule-of-thirds composition" },
-    { label: "Symmetrical", value: "symmetrical composition with balanced visual elements" },
     { label: "Off-center", value: "off-center composition with intentional visual balance" },
-    { label: "Negative space", value: "composition using deliberate negative space around the subject" },
-    { label: "Leading lines", value: "composition using leading lines to draw attention toward the subject" },
-    { label: "Foreground framing", value: "composition using foreground elements to naturally frame the subject" },
-    { label: "Dynamic diagonal", value: "dynamic diagonal composition creating a sense of movement and visual energy" },
-    { label: "Motion blur", value: "dynamic motion blur conveying movement and energy" }
+    { label: "Symmetrical", value: "symmetrical composition with balanced visual elements" }
 ];
 
 // All camera-related pick lists combined into one flat menu of options,
