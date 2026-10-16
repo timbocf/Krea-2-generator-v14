@@ -63,8 +63,7 @@ const DEFAULT_PROMPT_FALLBACKS = {
     // No default camera perspective — when none is selected, the prompt
     // simply omits any perspective clause instead of forcing eye-level.
     camera: "candid",
-    timeOfDay: "natural daytime illumination",
-    lighting: "soft directional light, balanced exposure, and ambient fill",
+    lighting: "soft natural daylight",
     artStyle: "photo",
     genericPrompt: "a portrait of the subject"
 };
@@ -864,50 +863,18 @@ const cameraOptionsPresets = [
 // LIGHTING
 // =========================================
 
-const timeOfDayPresets = [
-    { label: "Daytime", value: "natural daytime illumination" },
-    { label: "Midday", value: "bright midday sunlight with a high sun" },
-    { label: "Late afternoon", value: "warm late-afternoon sunlight with moderately long shadows" },
-    { label: "Early evening", value: "early-evening light transitioning from daylight toward dusk" },
-    { label: "Golden hour", value: "warm golden-hour sunlight, low-angle sun and long soft shadows" },
-    { label: "Blue hour", value: "cool blue-hour ambient light shortly after sunset" },
-    { label: "Nighttime", value: "nighttime illumination with dark ambient surroundings" },
-    { label: "Overcast day", value: "soft overcast daylight with broad, diffused illumination" },
-    { label: "Dawn", value: "soft early-morning dawn light" },
-    { label: "Dusk", value: "soft dusk light with fading daylight and cool ambient tones" }
+const lightingPresets = [
+    { label: "Soft daylight", value: "soft natural daylight", tags: ["outdoor", "day"] },
+    { label: "Golden hour", value: "warm golden-hour sunlight", tags: ["outdoor", "day"] },
+    { label: "Overcast", value: "soft overcast daylight", tags: ["outdoor", "day"] },
+    { label: "Window light", value: "soft window light", tags: ["indoor", "day"] },
+    { label: "Studio", value: "bright soft studio lighting", tags: ["indoor"] },
+    { label: "Low-key dramatic", value: "moody low-key lighting with deep shadows", tags: ["indoor", "night"] },
+    { label: "Candlelight", value: "warm candlelight glow", tags: ["indoor", "night"] },
+    { label: "Moonlight", value: "cool moonlight", tags: ["outdoor", "night"] },
+    { label: "Neon night", value: "neon street lighting at night", tags: ["outdoor", "night", "urban"] },
+    { label: "Warm lamps", value: "warm interior lamp lighting", tags: ["indoor", "night"] }
 ];
-
-const naturalLightingPresets = [
-    { label: "Direct sunlight", value: "direct harsh sunlight with hard shadows", tags: ["outdoor", "day"] },
-    { label: "Overcast/soft daylight", value: "diffused daylight with soft ambient light", tags: ["outdoor", "day"] },
-    { label: "Window daylight", value: "soft window light with indoor natural lighting", tags: ["indoor", "day"] },
-    { label: "Curtains/sheers", value: "sunlight filtered through sheer curtains, creating soft diffused window light", tags: ["indoor", "day"] },
-    { label: "Golden hour rays", value: "warm sunbeams, golden hour light, and subtle volumetric glow", tags: ["outdoor", "day"] },
-    { label: "Moonlight/night", value: "cool moonlight with deep night ambience", tags: ["outdoor", "night"] },
-    { label: "Urban night (street/neon)", value: "neon glow, street lamp lighting, and urban night atmosphere", tags: ["outdoor", "night", "urban"] },
-    { label: "Warm flame (candle/fire)", value: "warm candlelight glow and fireplace ambient light", tags: ["indoor", "night"] },
-    { label: "Practical lamps (indoor lamps)", value: "warm practical lamp lighting and interior ambient lights", tags: ["indoor", "night"] }
-];
-
-const lightingDirectionPresets = [
-    { label: "Soft light", value: "soft flattering illumination with gentle shadows" },
-    { label: "Hard light", value: "hard directional illumination with crisp defined shadows" },
-    { label: "Front lighting", value: "frontal lighting illuminating the subject evenly" },
-    { label: "Side lighting", value: "directional side lighting emphasizing form and dimensionality" },
-    { label: "Backlighting", value: "strong backlighting with the main light positioned behind the subject" },
-    { label: "Rim lighting", value: "bright rim lighting outlining the edges of the subject and separating the subject from the background" },
-    { label: "Overhead lighting", value: "directional overhead lighting from above the subject" },
-    { label: "Underlighting", value: "dramatic low-angle lighting from below the subject" }
-];
-
-const lightingStylePresets = [
-    { label: "Neutral and Natural (soft directional light, balanced exposure, and ambient fill)", value: "soft directional light, balanced exposure, and ambient fill" },
-    { label: "Dramatic Contrast (low-key lighting, chiaroscuro, and deep shadows)", value: "low-key lighting, chiaroscuro, and deep shadows" },
-    { label: "Atmospheric Rays (volumetric light, god rays, and hazy atmosphere)", value: "volumetric light, god rays, and hazy atmosphere" },
-    { label: "Cinematic Blockbuster (cinematic lighting, teal-and-orange color grade, and rim lighting)", value: "cinematic lighting, teal-and-orange color grade, and rim lighting" },
-    { label: "Sun Dappled (dappled sunlight, soft shadows, and warm natural light)", value: "dappled sunlight, soft shadows, and warm natural light" }
-];
-
 const colorTreatmentPresets = [
     { label: "Black & white", value: "black-and-white monochrome treatment" },
     { label: "Sepia", value: "sepia-toned treatment" },
@@ -1055,8 +1022,8 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
                         )
                     ),
                     this.textField(
-                        "A {descriptor} {artStyle} of {gender}, {nationality}, {action}, {description}. {subjectPronoun} is wearing {clothing}. {timeOfDay}, {lighting}. Natural anatomy",
-                        "Prompt Template — tags: {descriptor}, {artStyle}, {gender}, {nationality}, {description}, {action}, {clothing}, {timeOfDay}, {lighting}, {colorTreatment}, {subjectPronoun}, {objectPronoun}, {possessive}, {reflexive}, {personNoun}.",
+                        "A {descriptor} {artStyle} of {gender}, {nationality}, {action}, {description}. {subjectPronoun} is wearing {clothing}. {lighting}. Natural anatomy",
+                        "Prompt Template — tags: {descriptor}, {artStyle}, {gender}, {nationality}, {description}, {action}, {clothing}, {lighting}, {colorTreatment}, {subjectPronoun}, {objectPronoun}, {possessive}, {reflexive}, {personNoun}.",
                         false,
                         80
                     )
@@ -1191,41 +1158,13 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
     // -----------------------------------------
     // LIGHTING
     // -----------------------------------------
-    fields.push(this.section(
-        "❖  LIGHTING • Time of Day",
-        randomizeEnabled
-            ? "Pick a time of day manually, or leave unselected to randomize"
-            : "Choose the environmental time and quality of ambient light",
-        [this.menu(
-            randomizeEnabled ? NONE_SELECTED : findPresetMenuIndex(timeOfDayPresets, DEFAULT_PROMPT_FALLBACKS.timeOfDay),
-            menuWithPlaceholder(randomizeEnabled ? "🎲 Random time of day (or pick one)" : "No time of day selected", timeOfDayPresets)
-        )]
-    ));
-
-    fields.push(this.section(
-        "❖  LIGHTING • Natural / Environmental",
-        randomizeEnabled
-            ? "Pick a light source manually, or leave unselected to randomize"
-            : "Select a natural or environmental light source",
-        [this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random light source (or pick one)" : "No natural/environmental lighting selected", naturalLightingPresets))]
-    ));
-    fields.push(this.section(
-        "❖  LIGHTING • Direction",
-        randomizeEnabled
-            ? "Pick a direction manually, or leave unselected to randomize"
-            : "Choose the main quality and direction of the light",
-        [this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random direction (or pick one)" : "No lighting direction selected", lightingDirectionPresets))]
-    ));
-    fields.push(this.section(
-        "❖  LIGHTING • Style / Balance",
-        randomizeEnabled
-            ? "Pick a style manually, or leave unselected to randomize"
-            : "Choose a lighting style that combines color and balance for the scene",
-        [this.menu(
-            randomizeEnabled ? NONE_SELECTED : findPresetMenuIndex(lightingStylePresets, DEFAULT_PROMPT_FALLBACKS.lighting),
-            menuWithPlaceholder(randomizeEnabled ? "🎲 Random lighting style (or pick one)" : "No lighting style selected", lightingStylePresets)
-        )]
-    ));
+        fields.push(this.section(
+            "❖  LIGHTING",
+            randomizeEnabled
+                ? "Pick lighting manually, or leave unselected to randomize"
+                : "Choose the lighting for the scene",
+            [this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random lighting (or pick one)" : "No lighting selected", lightingPresets))]
+        ));
 
     return fields;
 });
@@ -1539,24 +1478,8 @@ for (let i = 0; i < actionCount; i++) {
 // LIGHTING PARSING
 // =========================================
 
-const timeOfDayData = nextSection();
-const timeOfDay = selectedValueWithPlaceholder(timeOfDayData[0], timeOfDayPresets);
-
-const lightingParts = [];
-
-const naturalLightingData = nextSection();
-const naturalLighting = selectedValueWithPlaceholder(naturalLightingData[0], naturalLightingPresets);
-if (naturalLighting) lightingParts.push(naturalLighting);
-
-const lightingDirectionData = nextSection();
-const lightingDirection = selectedValueWithPlaceholder(lightingDirectionData[0], lightingDirectionPresets);
-if (lightingDirection) lightingParts.push(lightingDirection);
-
-const lightingStyleData = nextSection();
-const lightingStyle = selectedValueWithPlaceholder(lightingStyleData[0], lightingStylePresets);
-if (lightingStyle) lightingParts.push(lightingStyle);
-
-const lighting = joinParts(lightingParts);
+const lightingData = nextSection();
+const lighting = selectedValueWithPlaceholder(lightingData[0], lightingPresets);
 
 // =========================================
 // CALCULATE DIMENSIONS
@@ -1578,6 +1501,7 @@ function fillTemplate(template, values) {
 function cleanPrompt(prompt) {
     return prompt
         .replace(/,\s*,/g, ",")
+        .replace(/\.\s*,/g, ".")
         .replace(/^\s*,\s*/g, "")
         .replace(/\s*,\s*$/g, "")
         .replace(/\s{2,}/g, " ")
@@ -1690,17 +1614,17 @@ function randomPreset(presets) {
 // action. Read when randomizing lighting (see buildRandomAction).
 let lastActionEnvTags = [];
 
-// Random natural-lighting preset whose tags match the last built action's
+// Random lighting preset whose tags match the last built action's
 // environment. Falls back to the full list when the context is unknown.
-function randomCompatibleNaturalLighting() {
+function randomCompatibleLighting() {
     const wantIndoor = lastActionEnvTags.includes("indoor");
     const wantOutdoor = lastActionEnvTags.includes("outdoor");
-    const pool = naturalLightingPresets.filter(p => {
+    const pool = lightingPresets.filter(p => {
         if (wantIndoor) return hasPresetTag(p, "indoor");
         if (wantOutdoor) return hasPresetTag(p, "outdoor");
         return true;
     });
-    return randomPresetValue(pool.length ? pool : naturalLightingPresets);
+    return randomPresetValue(pool.length ? pool : lightingPresets);
 }
 
 // Never randomly select the explicit Sexual Positions menu or pile
@@ -1763,7 +1687,7 @@ function makePrompt(data, aspectOption) {
         description: data.subject.subjectDetails,
         subjectDetails: data.subject.subjectDetails,
         clothing: data.outfit, action: data.action,
-        timeOfDay: data.timeOfDay, lighting: data.lighting,
+        timeOfDay: "", lighting: data.lighting,
         colorTreatment: colorTreatmentText
     };
     let prompt = cleanPrompt(applyGenderTerms(fillTemplate(promptTemplate, values), data.subject.genderForm));
@@ -1791,12 +1715,7 @@ if (randomizeEnabled) {
             action: actionText,
             camera: cameraChoices.length ? randomElement(cameraChoices) : randomPresetValue(cameraOptionsPresets),
             artStyle: artStyles.length ? randomElement(artStyles) : randomPresetValue(artStylePresets),
-            timeOfDay: timeOfDay || randomPresetValue(timeOfDayPresets),
-            lighting: joinParts([
-                naturalLighting || randomCompatibleNaturalLighting(),
-                lightingDirection || randomPresetValue(lightingDirectionPresets),
-                lightingStyle || randomPresetValue(lightingStylePresets)
-            ])
+            lighting: lighting || randomCompatibleLighting()
         }, aspectOption));
     }
 } else {
@@ -1814,7 +1733,6 @@ if (randomizeEnabled) {
                                 }, outfit: outfit || DEFAULT_PROMPT_FALLBACKS.outfit,
                                 action: action || DEFAULT_PROMPT_FALLBACKS.action,
                                 camera, artStyle,
-                                timeOfDay: timeOfDay || DEFAULT_PROMPT_FALLBACKS.timeOfDay,
                                 lighting: lighting || DEFAULT_PROMPT_FALLBACKS.lighting
                             }, aspectOption));
                         }
