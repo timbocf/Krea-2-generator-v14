@@ -948,38 +948,16 @@ function addGroupedSections(fields, titlePrefix, groups) {
 }
 
 // =========================================
-// STEP 1 — BATCH SETUP
+// IMAGE COUNT OPTIONS (top section of the input screen below)
 // =========================================
-// Modes: Manual = cartesian product; Subject Variations = same subject
-// throughout the batch; Random Subjects = reroll unspecified traits per image.
-const IMAGE_COUNTS = [1, 2, 3, 4, 5, 10, 15, 20, 25, 50];
-const setup = requestFromUser("Batch Setup", "Continue", function () {
-    const counts = (singular, plural) => [1, 2, 3, 4, 5].map(n => `${n} ${n === 1 ? singular : plural}`);
-    return [
-        this.section("❖  Generation Mode", "Manual builds combinations. Subject Variations keeps the same person. Random Subjects changes only unspecified traits. Solo Girl Batch locks gender to woman and randomizes a nationality-compatible new subject per image.", [
-            this.menu(1, ["Manual Combinations", "Subject Variations", "Random Subjects", "Solo Girl Batch"]),
-            this.menu(4, IMAGE_COUNTS.map(n => `${n} image${n === 1 ? "" : "s"}`))
-        ]),
-        this.section("❖  Batch Configurations", "Counts apply only to Manual Combinations. Krea 2 is the only model.", [
-            this.menu(0, counts("Subject", "Subjects")),
-            this.menu(0, counts("Outfit", "Outfits")),
-            this.menu(0, counts("Action", "Actions")),
-            this.menu(0, counts("Camera Angle", "Camera Angles")),
-            this.menu(0, counts("Art Style", "Art Styles")),
-            ...ASPECT_OPTIONS.map(option => this.switch(option.label === "1:1", option.label))
-        ])
-    ];
-});
-const mode = ["manual", "variations", "random", "soloGirls"][setup[0][0]] || "variations";
-const randomizeEnabled = mode !== "manual";
-const randomImageCount = IMAGE_COUNTS[setup[0][1]] || 5;
-const setupData = setup[1];
-const subjectCount = randomizeEnabled ? 1 : setupData[0] + 1;
-const outfitCount = randomizeEnabled ? 1 : setupData[1] + 1;
-const actionCount = randomizeEnabled ? 1 : setupData[2] + 1;
-const cameraCount = randomizeEnabled ? 1 : setupData[3] + 1;
-const artStyleCount = randomizeEnabled ? 1 : setupData[4] + 1;
-const aspectSelections = setupData.slice(5, 5 + ASPECT_OPTIONS.length);
+// The old Batch Setup screen and generation modes are gone: there is one
+// behavior — anything not selected is randomized per image.
+const IMAGE_COUNTS = [1, 3, 5, 10];
+const subjectCount = 1;
+const outfitCount = 1;
+const actionCount = 1;
+const cameraCount = 1;
+const artStyleCount = 1;
 
 function getSelectedAspectOptions(selections) {
     const selected = ASPECT_OPTIONS.filter((_, i) => selections[i] === true);
@@ -987,11 +965,23 @@ function getSelectedAspectOptions(selections) {
 }
 
 // =========================================
-// STEP 2 — INPUT SCREEN
+// STEP 1 — INPUT SCREEN
 // =========================================
 
 const inputs = requestFromUser("Batch Prompts", "Generate", function () {
     const fields = [];
+
+    // -----------------------------------------
+    // BATCH (image count + aspect ratios)
+    // -----------------------------------------
+    fields.push(this.section(
+        "❖  Batch",
+        "Anything you don't pick below is randomized per image.",
+        [
+            this.menu(2, IMAGE_COUNTS.map(n => `${n} image${n === 1 ? "" : "s"}`)),
+            ...ASPECT_OPTIONS.map(option => this.switch(option.label === "1:1", option.label))
+        ]
+    ));
 
     // -----------------------------------------
     // SUBJECTS
@@ -1011,14 +1001,12 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
             // -----------------------------------------
             fields.push(this.section(
                 "❖  Prompt Options & Template",
-                randomizeEnabled
-                    ? "Pick an art style manually, or leave unselected to randomize. Customize the template with tags."
-                    : "Choose up to 5 art styles and customize the template with tags",
+                "Pick an art style manually, or leave unselected to randomize. Customize the template with tags.",
                 [
                     ...Array.from({ length: artStyleCount }, (_, idx) =>
                         this.menu(
-                            (!randomizeEnabled && idx === 0) ? findPresetMenuIndex(artStylePresets, DEFAULT_PROMPT_FALLBACKS.artStyle) : NONE_SELECTED,
-                            menuWithPlaceholder(randomizeEnabled ? "🎲 Random art style (or pick one)" : "No art style selected", artStylePresets)
+                            NONE_SELECTED,
+                            menuWithPlaceholder("🎲 Random art style (or pick one)", artStylePresets)
                         )
                     ),
                     this.textField(
@@ -1035,13 +1023,11 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
             // -----------------------------------------
             fields.push(this.section(
                 "❖  CAMERA • Options",
-                randomizeEnabled
-                    ? "Pick a camera angle/framing/composition manually, or leave unselected to randomize"
-                    : `Choose up to ${cameraCount} camera angles, framings, compositions, or depth-of-field looks`,
+"Pick a camera angle/framing/composition manually, or leave unselected to randomize",
                 Array.from({ length: cameraCount }, () =>
                     this.menu(
                         NONE_SELECTED,
-                        menuWithPlaceholder(randomizeEnabled ? "🎲 Random camera option (or pick one)" : "No camera option selected", cameraOptionsPresets)
+                        menuWithPlaceholder("🎲 Random camera option (or pick one)", cameraOptionsPresets)
                     )
                 )
             ));
@@ -1051,47 +1037,39 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
             // -----------------------------------------
             fields.push(this.section(
                 "❖  Mood / Aesthetic / Historical Media",
-                randomizeEnabled
-                    ? "Pick a treatment manually, or leave unselected for none (not randomized — often overpowering)"
-                    : "Optional monochrome, film, or stylized aesthetic treatment controls",
-                [this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "None (or pick one)" : "No mood/aesthetic/historical media selected", colorTreatmentPresets))]
+                "Pick a treatment manually, or leave unselected for none (not randomized — often overpowering)",
+                [this.menu(NONE_SELECTED, menuWithPlaceholder("None (or pick one)", colorTreatmentPresets))]
             ));
         }
 
         fields.push(this.section(
             sectionTitle(subjectPrefix, "Identity"),
-            randomizeEnabled
-                ? "Manually pin any trait, or leave unselected to randomize it"
-                : "Gender, ethnicity, age, skin tone, and eye color",
+            "Manually pin any trait, or leave unselected to randomize it",
             [
                 this.menu(
-                    randomizeEnabled ? NONE_SELECTED : findPresetMenuIndex(genderPresets, "woman"),
-                    menuWithPlaceholder(randomizeEnabled ? "🎲 Random gender (or pick one)" : "Choose gender", genderPresets)
+                    NONE_SELECTED,
+                    menuWithPlaceholder("🎲 Random gender (or pick one)", genderPresets)
                 ),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random nationality (or pick one)" : "Choose nationality / ethnicity", nationalityPresets)),
-                randomizeEnabled
-                    ? this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random age (or pick one)", agePresets))
-                    : this.menu(agePresets.indexOf("30 years old"), agePresets),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random nationality (or pick one)", nationalityPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random age (or pick one)", agePresets)),
             ]
         ));
 
         fields.push(this.section(
             sectionTitle(subjectPrefix, "Body / Physique"),
-            randomizeEnabled
-                ? "Manually pin any characteristic, or leave unselected to randomize it"
-                : "Choose independent characteristics to control the subject's overall proportions and silhouette",
+            "Manually pin any characteristic, or leave unselected to randomize it",
             [
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random build (or pick one)" : "No overall build selected", overallBuildPresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random height (or pick one)" : "No height selected", heightPresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random chest (or pick one)" : "No chest description", chestPresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hips (or pick one)" : "No hip description", hipPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random build (or pick one)", overallBuildPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random height (or pick one)", heightPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random chest (or pick one)", chestPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random hips (or pick one)", hipPresets)),
                 this.menu(NONE_SELECTED, presetLabels(bodyShapePresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random legs (or pick one)" : "No leg description", legPresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random ass size (or pick one)" : "No ass size selected", assSizePresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random belly size (or pick one)" : "No belly size selected", bellySizePresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random legs (or pick one)", legPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random ass size (or pick one)", assSizePresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random belly size (or pick one)", bellySizePresets)),
                 this.menu(NONE_SELECTED, presetLabels(specificBodyPresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random lips (or pick one)" : "No lips description", lipsPresets)),
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random eyelashes (or pick one)" : "No eyelashes description", eyelashPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random lips (or pick one)", lipsPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random eyelashes (or pick one)", eyelashPresets)),
                 this.textField("", "Custom body details (always included)", false, 60)
             ]
         ));
@@ -1100,11 +1078,9 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
 
         fields.push(this.section(
             sectionTitle(subjectPrefix, "Hair"),
-            randomizeEnabled
-                ? "Pick hair color/length manually, or leave unselected to randomize. Custom text is always included."
-                : "Hair color, length, hairstyle, and additional subject details",
+            "Pick hair color/length manually, or leave unselected to randomize. Custom text is always included.",
             [
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random hair length (or pick one)" : "No hair length", hairLengthPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random hair length (or pick one)", hairLengthPresets)),
                 this.textField("", "Custom hair length (always included)", false, 40),
                 this.textField("", "Custom hairstyle (always included)", false, 40),
                 this.textField("", "Additional subject details (always included)", false, 60)
@@ -1123,11 +1099,9 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
 
         fields.push(this.section(
             sectionTitle(outfitPrefix, "Preset"),
-            randomizeEnabled
-                ? "Pick a preset or enter custom text, or leave both empty to randomize clothing from all categories"
-                : "Choose a preset or add custom outfit text",
+            "Pick a preset or enter custom text, or leave both empty to randomize clothing from all categories",
             [
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random outfit (or pick one)" : "No clothing selected", clothingPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random outfit (or pick one)", clothingPresets)),
                 this.textField("", "Custom outfit description (always included)", false, 60)
             ]
         ));
@@ -1143,11 +1117,9 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
 
         fields.push(this.section(
             sectionTitle(actionPrefix, "Preset"),
-            randomizeEnabled
-                ? "Pick a pose preset or enter custom text, or leave both empty to randomize the pose from all categories"
-                : "Choose a preset or add custom pose text",
+            "Pick a pose preset or enter custom text, or leave both empty to randomize the pose from all categories",
             [
-                this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random pose preset (or pick one)" : "No pose preset selected", complexActionPresets)),
+                this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random pose preset (or pick one)", complexActionPresets)),
                 this.textField("", "Custom action / pose modifier (always included)", false, 60)
             ]
         ));
@@ -1160,17 +1132,15 @@ const inputs = requestFromUser("Batch Prompts", "Generate", function () {
     // -----------------------------------------
         fields.push(this.section(
             "❖  LIGHTING",
-            randomizeEnabled
-                ? "Pick lighting manually, or leave unselected to randomize"
-                : "Choose the lighting for the scene",
-            [this.menu(NONE_SELECTED, menuWithPlaceholder(randomizeEnabled ? "🎲 Random lighting (or pick one)" : "No lighting selected", lightingPresets))]
+            "Pick lighting manually, or leave unselected to randomize",
+            [this.menu(NONE_SELECTED, menuWithPlaceholder("🎲 Random lighting (or pick one)", lightingPresets))]
         ));
 
     return fields;
 });
 
 // =========================================
-// STEP 3 — PARSE INPUTS
+// STEP 2 — PARSE INPUTS
 // =========================================
 
 let sectionIdx = 0;
@@ -1261,29 +1231,26 @@ function applyGenderTerms(prompt, genderForm) {
     return result;
 }
 
+// --- Batch: image count + aspect ratios (first section of the input screen) ---
+const batchData = nextSection();
+const randomImageCount = IMAGE_COUNTS[batchData[0]] || 5;
+const aspectSelections = batchData.slice(1, 1 + ASPECT_OPTIONS.length);
+
 // =========================================
 // SUBJECT PARSING
 // =========================================
-
-const subjects = [];
-const subjectLeadTexts = [];
-const subjectDetailTexts = [];
-const subjectGenderTexts = [];
-const subjectNationalityTexts = [];
-const subjectGenderForms = [];
 
 let cameraChoices = [];
 let colorTreatmentText = "";
 let artStyles = [];
 let promptTemplate = "";
 
-// Randomization Mode: captured user picks (empty = randomize per image).
-// The subject's concrete traits are resolved per-image in the
-// randomization engine instead of being flattened here.
+// Captured user picks (empty = randomize per image). The subject's concrete
+// traits are resolved per-image in the randomization engine instead of
+// being flattened here.
 let randomSubjectConfig = null;
 
 for (let i = 0; i < subjectCount; i++) {
-    const subjectParts = [];
 
     // --- Identity ---
     const celebrityData = nextSection();
@@ -1311,11 +1278,8 @@ for (let i = 0; i < subjectCount; i++) {
     const identityData = nextSection();
     const gender = selectedValueWithPlaceholder(identityData[0], genderPresets);
     const nationality = selectedValueWithPlaceholder(identityData[1], nationalityPresets);
-    // In random mode the age menu has a placeholder (index 0 = randomize);
-    // in manual mode every index maps directly to a preset.
-    const age = randomizeEnabled
-        ? selectedValueWithPlaceholder(identityData[2], agePresets)
-        : selectedValueNoPlaceholder(identityData[2], agePresets);
+    // Index 0 = randomize; any other index maps to a preset.
+    const age = selectedValueWithPlaceholder(identityData[2], agePresets);
 
     // --- Body / Physique ---
     const bodyData = nextSection();
@@ -1350,83 +1314,23 @@ for (let i = 0; i < subjectCount; i++) {
     // --- Accessories ---
     const accessoryValues = parseGroupedSwitches(accessoryGroups);
 
-    if (randomizeEnabled) {
-        randomSubjectConfig = {
-            celebrity, gender, nationality, age,
-            pinnedBuild, pinnedHeight, pinnedChest, pinnedHips, pinnedBodyShape,
-            pinnedLegs, pinnedAssSize, pinnedBellySize, pinnedSpecificBody,
-            pinnedLips, pinnedEyelashes, customBodyDetails,
-            appearanceValues,
-            pinnedHairLength, customHairLength,
-            customHairstyle, hairstyleValues,
-            additionalDetails, accessoryValues
-        };
-        break;
-    }
-
-    // -----------------------------------------
-    // Manual mode: flatten everything now.
-    // -----------------------------------------
-    const genderForm = getGenderForm(gender);
-
-    if (nationality) subjectParts.push(nationality);
-    if (gender) subjectParts.push(gender);
-    if (age) subjectParts.push(age);
-    if (celebrity) subjectParts.push(celebrity);
-
-    const bodySelections = [
-        [bodyData[0], overallBuildPresets],
-        [bodyData[1], heightPresets],
-        [bodyData[2], chestPresets],
-        [bodyData[3], hipPresets],
-        [bodyData[5], legPresets],
-        [bodyData[6], assSizePresets],
-        [bodyData[7], bellySizePresets],
-        [bodyData[9], lipsPresets],
-        [bodyData[10], eyelashPresets]
-    ];
-
-    for (const [index, presets] of bodySelections) {
-        const value = selectedValueWithPlaceholder(index, presets);
-        if (value) subjectParts.push(value);
-    }
-
-    if (pinnedBodyShape) subjectParts.push(pinnedBodyShape);
-    if (pinnedSpecificBody) subjectParts.push(pinnedSpecificBody);
-    if (customBodyDetails) subjectParts.push(customBodyDetails);
-
-    subjectParts.push(...appearanceValues);
-
-    const hairLength = customHairLength !== "" ? customHairLength : pinnedHairLength;
-    const hairstyle = joinParts([...hairstyleValues, customHairstyle]);
-
-    const hairDescription = joinParts([hairLength, hairstyle]);
-    if (hairDescription) subjectParts.push(hairDescription);
-
-    if (additionalDetails) subjectParts.push(additionalDetails);
-
-    subjectParts.push(...accessoryValues);
-
-    // --- Subject text variants ---
-    const subjectLeadParts = [];
-    if (nationality) subjectLeadParts.push(nationality);
-    if (gender) subjectLeadParts.push(gender);
-
-    const subjectDetailsParts = subjectParts.slice(subjectLeadParts.length);
-
-    subjects.push(subjectParts.join(", "));
-    subjectLeadTexts.push(subjectLeadParts.join(", "));
-    subjectDetailTexts.push(subjectDetailsParts.join(", "));
-    subjectGenderTexts.push(gender || "");
-    subjectNationalityTexts.push(nationality || "");
-    subjectGenderForms.push(genderForm);
+    randomSubjectConfig = {
+        celebrity, gender, nationality, age,
+        pinnedBuild, pinnedHeight, pinnedChest, pinnedHips, pinnedBodyShape,
+        pinnedLegs, pinnedAssSize, pinnedBellySize, pinnedSpecificBody,
+        pinnedLips, pinnedEyelashes, customBodyDetails,
+        appearanceValues,
+        pinnedHairLength, customHairLength,
+        customHairstyle, hairstyleValues,
+        additionalDetails, accessoryValues
+    };
+    break;
 }
 
 // =========================================
 // OUTFIT PARSING
 // =========================================
 
-const outfits = [];
 let randomOutfitConfig = null;
 
 for (let i = 0; i < outfitCount; i++) {
@@ -1435,24 +1339,14 @@ for (let i = 0; i < outfitCount; i++) {
     const customOutfit = typeof outfitMetaData[1] === "string" ? outfitMetaData[1].trim() : "";
     const clothingGroupValues = parseGroupedSwitches(clothingGroups);
 
-    if (randomizeEnabled) {
-        randomOutfitConfig = { selectedOutfit, customOutfit, clothingGroupValues };
-        break;
-    }
-
-    const outfitParts = [];
-    if (selectedOutfit) outfitParts.push(selectedOutfit);
-    if (customOutfit) outfitParts.push(customOutfit);
-    outfitParts.push(...clothingGroupValues);
-
-    outfits.push(joinParts(outfitParts));
+    randomOutfitConfig = { selectedOutfit, customOutfit, clothingGroupValues };
+    break;
 }
 
 // =========================================
 // ACTION PARSING
 // =========================================
 
-const actions = [];
 let randomActionConfig = null;
 
 for (let i = 0; i < actionCount; i++) {
@@ -1461,17 +1355,8 @@ for (let i = 0; i < actionCount; i++) {
     const customAction = typeof actionMetaData[1] === "string" ? actionMetaData[1].trim() : "";
     const actionGroupValues = parseGroupedSwitches(actionGroups);
 
-    if (randomizeEnabled) {
-        randomActionConfig = { selectedAction, customAction, actionGroupValues };
-        break;
-    }
-
-    const actionParts = [];
-    if (selectedAction) actionParts.push(selectedAction);
-    if (customAction) actionParts.push(customAction);
-    actionParts.push(...actionGroupValues);
-
-    actions.push(joinParts(actionParts));
+    randomActionConfig = { selectedAction, customAction, actionGroupValues };
+    break;
 }
 
 // =========================================
@@ -1513,13 +1398,11 @@ function ensureTextContent(value, fallback) {
     return cleaned || fallback;
 }
 
-const effectiveCameraChoices = cameraChoices.length > 0 ? cameraChoices : [DEFAULT_PROMPT_FALLBACKS.camera];
 
 // =========================================
 // RANDOMIZATION ENGINE AND PROMPT CONSTRUCTION
 // =========================================
-// Manual values always win. In Subject Variations, the subject is resolved
-// ONCE; in Random Subjects, unselected traits reroll per image.
+// Pinned values always win; unselected traits reroll per image.
 function choose(pinned, presets, enabled = true) {
     return pinned || (enabled ? randomPresetValue(presets) : "");
 }
@@ -1697,49 +1580,25 @@ function makePrompt(data, aspectOption) {
 
 const selectedAspectOptions = getSelectedAspectOptions(aspectSelections);
 const finalPrompts = [];
-const artStyleChoices = artStyles.length ? artStyles : [DEFAULT_PROMPT_FALLBACKS.artStyle];
 
-if (randomizeEnabled) {
-    const sameSubject = mode === "variations" ? buildRandomSubject(randomSubjectConfig) : null;
-    // v15 Solo Girl Batch: fresh nationality-compatible subject per image, gender locked to woman.
-    const soloGirlConfig = mode === "soloGirls" ? { ...randomSubjectConfig, gender: "woman" } : null;
-    for (let i = 0; i < randomImageCount; i++) {
-        const subject = sameSubject || buildRandomSubject(soloGirlConfig || randomSubjectConfig);
-        const aspectOption = randomElement(selectedAspectOptions);
-        // Build the action first -- it records its environment tags
-        // (lastActionEnvTags) for compatible lighting below.
-        const actionText = buildRandomAction(randomActionConfig);
-        finalPrompts.push(makePrompt({
-            subject,
-            outfit: buildRandomOutfit(randomOutfitConfig),
-            action: actionText,
-            camera: cameraChoices.length ? randomElement(cameraChoices) : randomPresetValue(cameraOptionsPresets),
-            artStyle: artStyles.length ? randomElement(artStyles) : randomPresetValue(artStylePresets),
-            lighting: lighting || randomCompatibleLighting()
-        }, aspectOption));
-    }
-} else {
-    for (const aspectOption of selectedAspectOptions)
-        for (let i = 0; i < subjects.length; i++)
-            for (const outfit of outfits)
-                for (const action of actions)
-                    for (const camera of effectiveCameraChoices)
-                        for (const artStyle of artStyleChoices) {
-                            finalPrompts.push(makePrompt({
-                                subject: {
-                                    subject: subjects[i], subjectLead: subjectLeadTexts[i],
-                                    subjectDetails: subjectDetailTexts[i], gender: subjectGenderTexts[i],
-                                    nationality: subjectNationalityTexts[i], genderForm: subjectGenderForms[i]
-                                }, outfit: outfit || DEFAULT_PROMPT_FALLBACKS.outfit,
-                                action: action || DEFAULT_PROMPT_FALLBACKS.action,
-                                camera, artStyle,
-                                lighting: lighting || DEFAULT_PROMPT_FALLBACKS.lighting
-                            }, aspectOption));
-                        }
+for (let i = 0; i < randomImageCount; i++) {
+    const subject = buildRandomSubject(randomSubjectConfig);
+    const aspectOption = randomElement(selectedAspectOptions);
+    // Build the action first -- it records its environment tags
+    // (lastActionEnvTags) for compatible lighting below.
+    const actionText = buildRandomAction(randomActionConfig);
+    finalPrompts.push(makePrompt({
+        subject,
+        outfit: buildRandomOutfit(randomOutfitConfig),
+        action: actionText,
+        camera: cameraChoices.length ? randomElement(cameraChoices) : randomPresetValue(cameraOptionsPresets),
+        artStyle: artStyles.length ? randomElement(artStyles) : randomPresetValue(artStylePresets),
+        lighting: lighting || randomCompatibleLighting()
+    }, aspectOption));
 }
 
 // =========================================
-// STEP 5 — REVIEW / PREVIEW SCREEN
+// STEP 3 — REVIEW / PREVIEW SCREEN
 // =========================================
 // Shows the total prompt count and a sample of the final prompt strings
 // (enhanced when the enhancer is enabled) before anything is generated,
@@ -1761,19 +1620,15 @@ function buildPreviewText(prompts) {
 async function runBatch() {
 
     const review = requestFromUser("Review Prompts", "Generate", function () {
-        const aspectSummary = randomizeEnabled
-            ? "random aspect ratios"
-            : selectedAspectOptions.map(option => option.label).join(", ");
+        const aspectSummary = "random aspect ratios";
         const modelSummary = KREA_MODEL.label;
         const totalImages = finalPrompts.length;
-        const modeSummary = randomizeEnabled
-            ? `${finalPrompts.length} image(s) in ${mode === "variations" ? "Subject Variations" : mode === "soloGirls" ? "Solo Girl Batch" : "Random Subjects"} mode. Manual selections are preserved.`
-            : `This batch will generate ${totalImages} image(s) using ${aspectSummary} on ${modelSummary}.`;
+        const modeSummary = `${totalImages} image(s). Anything not selected was randomized per image.`;
 
         return [
             this.section(
                 "❖  Batch Summary",
-                `${modeSummary} Rendering on ${modelSummary}${randomizeEnabled ? ` at ${aspectSummary}` : ""}.`,
+                `${modeSummary} Rendering on ${modelSummary} at ${aspectSummary}.`,
                 [this.switch(true, `Confirm and generate all ${totalImages} image(s)`)]
             ),
 
