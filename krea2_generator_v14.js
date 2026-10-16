@@ -834,7 +834,8 @@ const cameraPerspectivePresets = [
     { label: "Low angle", value: "low-angle perspective looking upward toward the subject" },
     { label: "High angle", value: "high-angle perspective looking downward toward the subject" },
     { label: "Side view", value: "side-view camera perspective" },
-    { label: "POV", value: "POV" }
+    { label: "POV", value: "POV" },
+    { label: "Dutch angle", value: "tilted dutch-angle perspective" }
 ];
 
 const depthOfFieldPresets = [
